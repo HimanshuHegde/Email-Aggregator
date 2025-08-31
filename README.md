@@ -57,13 +57,10 @@ Automatic email classification into:
 First, start the Elasticsearch instance using Docker:
 
 ```bash
-docker run -d \
-  --name elasticsearch \
-  -p 9200:9200 \
-  -p 9300:9300 \
+docker run -d --name elasticsearch -p 9200:9200 -p 9300:9300 \
   -e "discovery.type=single-node" \
-  -e "ES_JAVA_OPTS=-Xms512m -Xmx512m" \
-  elasticsearch:9.1.2
+  -e "ELASTIC_PASSWORD=1234567890" \
+  elasticsearch:8.19.2
 ```
 
 Verify Elasticsearch is running:
