@@ -8,8 +8,8 @@ A comprehensive email management system with real-time IMAP synchronization, AI-
 - **Frontend**: React, Tailwind CSS, TypeScript
 - **Database**: Elasticsearch (Docker)
 - **Real-time**: Socket.io for live updates
-- **Email**: IMAP connections with IDLE mode
-- **AI**: Email categorization engine
+- **Email**: IMAP connections with IDLE mode,Nodemailer for sending mails
+- **AI**: Email categorization engine using gemini api
 - **Integrations**: Slack notifications, Webhooks
 
 ## ✨ Features
@@ -91,6 +91,7 @@ npm install
 Create environment files for backend:
 
 #### Backend Environment (`.env`)
+Note: for gemini api it is recomended to use your own api because if the token runs out the classification will just respnd with unclassified.
 ```env
 USER_ACCOUNTS = [{"email":"awps797@gmail.com","password":"rwua fekf ycxq gubn"},{"email":"797portfolio@gmail.com","password":"ftwi mtbh pmyi ohsa"}]
 ES_PASS = 1234567890
