@@ -14,8 +14,9 @@ export default async function imapConnection(): Promise<ImapFlow[]> {
         for(let account of Accounts) { 
             const client = new ImapFlow({ host: 'imap.gmail.com',
                 port: 993,
-                secure: true, auth: { user: account.email, pass: account.password, }, 
-                logger: false 
+                secure: true, 
+                auth: { user: account.email, pass: account.password, }, 
+                logger: false ,
             });
              // loogging in as each user
             await client.connect();
