@@ -1,10 +1,8 @@
 import   { ImapFlow } from 'imapflow';
 import dotenv from 'dotenv';
+import { Accounts } from '../types/email';
 dotenv.config();
-interface Accounts{
-    email: string;
-    password: string;
-}
+
 // function to connect to multiple imap accounts
 export default async function imapConnection(): Promise<ImapFlow[]> {
     let clients:ImapFlow[] =[]; 

@@ -18,6 +18,7 @@ export async function createEmailIndex() {
         index: "emails",
         mappings: {
           properties: {
+            
             account: { type: "keyword" },
             folder: { type: "keyword" },
             aiLabel: { type: "keyword" },
@@ -58,3 +59,4 @@ export async function indexingEmail(email: Email) {
     console.error("error indexing email:", err);
   }
 }
+

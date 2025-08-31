@@ -1,13 +1,14 @@
 import { Client } from "@elastic/elasticsearch";
-import { classifyEmail } from "../server functions/aiClassifier";
 import { Request, Response } from "express";
 import { Email } from "../types/email";
+import crypto from "crypto";
+
 const client = new Client({
   node: "http://localhost:9200",
   auth: { username: "elastic", password: process.env.ES_PASS! },
 });
 
-// function to index a single email document
+
 
 // function to search emails based on a query string
 export async function searchEmails(req: Request, res: Response) {
@@ -37,7 +38,6 @@ export async function searchEmails(req: Request, res: Response) {
   res
     .status(200)
     .json(result.hits.hits.map((hit) => ({ id: hit._id, ...hit._source! })));
-  return res;
 }
 
 // function to create emails
@@ -69,7 +69,7 @@ export async function getEmailById(req: Request, res: Response) {
 export async function updateEmail(req: Request, res: Response) {
   const { id } = req.params;
   const updates: Partial<Email> = req.body;
-  const result = await client.update({
+  await client.update({
     index: "emails",
     id,
     body: {
@@ -77,7 +77,7 @@ export async function updateEmail(req: Request, res: Response) {
     },
     refresh: true,
   });
-
+  
   res.status(200).json({ id, ...updates });
 }
 
@@ -93,16 +93,56 @@ export async function deleteEmail(req: Request, res: Response) {
   res.status(200).json({ message: `Email with id ${id} deleted.` });
 }
 
-// export async function getAllEmails() {
-//   const result = await client.search({
-//     index: 'emails',
-//     size: 1000, // number of emails to fetch (adjust as needed)
-//     body: {
-//       query: {
-//         match_all: {}, // fetches all documents in the index
-//       },
-//     },
-//   });
+function generateId(email: Email): string {
+  if (email.id) return email.id;
+  return crypto
+    .createHash("sha1")
+    .update(`${email.subject}-${email.date}-${email.from}`)
+    .digest("hex");
+}
 
-//   return result.hits.hits.map(hit => hit._source);
-// }
+// function to bulk create emails
+export async function BulkcreateEmail(emailList: Email[]) {
+  try {
+    
+
+    if (Array.isArray(emailList)) {
+      const bulkOps: any[] = [];
+
+      for (const email of emailList) {
+        email.folder = email.folder ?? "[Gmail]/All Mail";
+        email.account = email.folder ==="Sent" ? email.from : email.to;
+
+        const id = generateId(email);
+
+        bulkOps.push({ create: { _index: "emails", _id: id } }); 
+        bulkOps.push(email);
+      }
+
+      const result = await client.bulk({
+        refresh: true,
+        body: bulkOps,
+      });
+
+      
+    } else {
+      const email: Email = emailList;
+      email.folder = email.folder ?? "[Gmail]/All Mail";
+      email.account = email.from;
+
+      const id = generateId(email);
+
+      const result = await client.index({
+        index: "emails",
+        id,
+        body: email,
+        refresh: true,
+        op_type: "create",
+      });
+
+    }
+  } catch (err: any) {
+    console.error("Error creating email(s):", err);
+  }
+}
+
