@@ -97,7 +97,7 @@ socket.on('new-email', (newEmail: Email) => {
 
     e.preventDefault();
     try {
-      const res = await fetch("https://reachinbox-assign.onrender.com0/api/sendMail", {
+      const res = await fetch("https://reachinbox-assign.onrender.com/api/sendMail", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(sendform),
