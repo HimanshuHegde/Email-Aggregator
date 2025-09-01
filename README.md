@@ -50,15 +50,15 @@ Automatic email classification into:
 
 ## 🚀 Local Setup
 ### for elasitcSearch the connection for docker(local) is as follows
-
+```bash
 const client = new Client({
   node: 'http://localhost:9200',
   auth: {
     username: 'elastic',         
     password: process.env.ES_PASS
   },
-  
 });
+```
 
 
 ### Prerequisites
