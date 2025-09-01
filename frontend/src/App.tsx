@@ -33,7 +33,7 @@ export default function App() {
 
   // Initial load from IMAP (last 30 days)
   useEffect(() => {
-    const socket = io("http://localhost:3000"); 
+    const socket = io("https://reachinbox-assign.onrender.com", { transports: ['websocket'] }); 
     socket.on("connect", () => {
   console.log("Connected to server");
 });
@@ -97,7 +97,7 @@ socket.on('new-email', (newEmail: Email) => {
 
     e.preventDefault();
     try {
-      const res = await fetch("http://localhost:3000/api/sendMail", {
+      const res = await fetch("https://reachinbox-assign.onrender.com0/api/sendMail", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(sendform),
