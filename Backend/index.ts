@@ -73,8 +73,8 @@ io.on("connection", (socket) => {
 app.use(CORS());
 
 app.use("/api/imapfunctions", imapfunctions);
-app.use("/api/elasticSearchfunc",elasticSearchfunc)
-app.use("/api/sendMail",sendmail)
+app.use("/api/elasticSearchfunc",elasticSearchfunc);
+app.use("/api/sendMail",sendmail);
 
 
 server.listen(3000, () => {

@@ -27,7 +27,10 @@ export async function fetchLast30Days(req: Request, res: Response) {
         )) {
           let folder:string;
           for(let label of message.labels!){
-            folder = label.slice(1);
+            folder = label.slice(1)
+            if(folder === "Inbox"){
+              folder = "INBOX"
+            }
           }
           response.push({
             uid: message.uid!,

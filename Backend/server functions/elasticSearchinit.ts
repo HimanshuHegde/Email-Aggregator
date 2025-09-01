@@ -3,8 +3,11 @@ import { Email } from "../types/email";
 import { classifyEmail } from "./aiClassifier";
 import {slackWebhook } from "./webhook/slack-webhook-notification";
 const client = new Client({
-  node: "http://localhost:9200",
-  auth: { username: "elastic", password: process.env.ES_PASS! },
+  node: 'https://my-elasticsearch-project-c4187a.es.us-central1.gcp.elastic.cloud:443',
+  auth: {
+    apiKey: 'eF8zMkFwa0J3d1lmeTdPSmQ4ODM6YXpTUGM0S3FCaU15UEdXRGtpX05qUQ=='
+  },
+  // serverMode: 'serverless',
 });
 
 export async function createEmailIndex() {
