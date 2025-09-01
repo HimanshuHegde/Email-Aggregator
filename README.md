@@ -1,6 +1,9 @@
 # Real-Time Email Synchronization System
 
 A comprehensive email management system with real-time IMAP synchronization, AI-powered categorization, and Slack integration.
+### Demo of the project 
+[![Watch the video](https://img.youtube.com/vi/mo5XjXIbD04/maxresdefault.jpg)](https://www.youtube.com/watch?v=mo5XjXIbD04)
+
 
 ## 🏗️ Architecture
 
