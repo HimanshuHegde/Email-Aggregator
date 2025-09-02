@@ -1,4 +1,4 @@
-# Real-Time Email Synchronization System
+# One Box Email Aggregator
 Note: Since backend is hosted in render it might go to sleep due to inactivity due to which data fetching could take a bit longer than expected or could even lead to an error.if u do come across an error just refresh it.
 A comprehensive email management system with real-time IMAP synchronization, AI-powered categorization, and Slack integration.
 ### Demo of the project 
