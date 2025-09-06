@@ -1,0 +1,43 @@
+
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Emails{
+  id Int @id @default(autoincrement())
+  subject String
+  body String
+  from String
+  to String
+  folder String
+  name String
+  aiLabel String
+  date DateTime
+  account Account @relation(fields: [accountId], references: [id])
+  accountId Int
+}
+
+model Account{
+  id Int @id @default(autoincrement())
+  email String @unique
+  AppPass String
+  owner User @relation(fields: [ownerId], references: [id])
+  ownerId Int
+  emails Emails[]
+}
+
+model User {
+  id Int @id @default(autoincrement())
+  email String @unique
+  password String
+  name String
+  account Account[]
+
+}
