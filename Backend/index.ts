@@ -95,6 +95,8 @@ app.use(
   })
 );
 
+
+// passport auth js
 const prisma = new PrismaClient();
 passport.use(new LocalStrategy(async function verify(username, password, cb) {
     try{
@@ -128,6 +130,8 @@ passport.deserializeUser(async (id: number, done) => {
     done(err);
   }
 });
+
+//routes
 
 app.use("/auth", authRoutes);
 
