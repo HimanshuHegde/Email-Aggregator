@@ -3,20 +3,29 @@ import elasticSearchfunc from "./routes/elasticSearchFunc.route";
 import http from "http";
 import CORS from "cors";
 import express from "express";
+import session from "express-session";
+import authRoutes from "./routes/auth.route";
+import passport from "passport";
+import { PrismaClient } from "./generated/prisma";
 import imapConnection from "./server functions/imapConnection";
-import {Server} from 'socket.io'
-import {indexingEmail} from "./server functions/elasticSearchinit"
+import { Strategy as LocalStrategy } from 'passport-local';
+import bcrypt from 'bcrypt'
+import { Server } from "socket.io";
+import { indexingEmail } from "./server functions/elasticSearchinit";
 import { createEmailIndex } from "./server functions/elasticSearchinit";
-import sendmail from "./routes/nodemailer.route"
+import sendmail from "./routes/nodemailer.route";
 const app = express();
 const PORT = process.env.PORT || 3000;
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 const server = http.createServer(app);
-const io = new Server(server,{
+
+// socket
+const io = new Server(server, {
   cors: {
     origin: "https://reach-inbox-assign.vercel.app/",
-    methods: ["GET", "POST"]
-  }
+    methods: ["GET", "POST"],
+  },
 });
 io.on("connection", (socket) => {
   console.log("a user connected");
@@ -36,17 +45,17 @@ io.on("connection", (socket) => {
             envelope: true,
             uid: true,
           })) {
-            const object = {subject: message.envelope?.subject!,
+            const object = {
+              subject: message.envelope?.subject!,
               name: message.envelope?.from![0]?.name!,
               from: message.envelope?.from![0]?.address!,
               date: message.envelope?.date!,
               to: message.envelope?.to![0]?.address!,
               account: message.envelope?.to![0]?.address!,
               folder: "INBOX",
-              body: message.envelope?.subject!,}
-            await indexingEmail(
-              object
-            );
+              body: message.envelope?.subject!,
+            };
+            await indexingEmail(object);
             emittingIdle(object);
           }
         } finally {
@@ -55,14 +64,15 @@ io.on("connection", (socket) => {
       });
     }
   })();
-  let prevobject:any = {};
-  function emittingIdle(object:any){
-    if(JSON.stringify(prevobject) != JSON.stringify(object)){
+  let prevobject: any = {};
+  function emittingIdle(object: any) {
+    if (JSON.stringify(prevobject) != JSON.stringify(object)) {
       prevobject = object;
-      socket.emit("new-email", object); 
+      socket.emit("new-email", object);
+    }
   }
-}
 });
+
 
 
 // function to create the index at the start of the server
@@ -71,12 +81,60 @@ io.on("connection", (socket) => {
 })();
 
 app.use(CORS());
+app.use(
+  session({
+    secret: process.env.SESSION_SECRET || "supersecret",
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+      httpOnly: true,
+      sameSite: "lax",
+      secure: process.env.NODE_ENV === "production",
+       maxAge: 1000 * 60 * 60 * 24 * 7,
+    },
+  })
+);
+
+const prisma = new PrismaClient();
+passport.use(new LocalStrategy(async function verify(username, password, cb) {
+    try{
+        const user = await prisma.user.findUnique({
+            where: {
+                email: username
+            }
+        });
+        if (!user) {
+            return cb(null, false, { message: 'Incorrect username.' });
+        }
+        const isMatch = await bcrypt.compare(password, user.password);
+        if (!isMatch) {
+            return cb(null, false, { message: 'Incorrect password.' });
+        }
+        return cb(null, user);
+    }catch(err){
+        return cb(err);
+    }
+}));
+
+passport.serializeUser((user: any, done) => {
+  done(null, user.id);
+});
+
+passport.deserializeUser(async (id: number, done) => {
+  try {
+    const user = await prisma.user.findUnique({ where: { id } });
+    done(null, user || false);
+  } catch (err) {
+    done(err);
+  }
+});
+
+app.use("/auth", authRoutes);
 
 app.use("/api/imapfunctions", imapfunctions);
-app.use("/api/elasticSearchfunc",elasticSearchfunc);
-app.use("/api/sendMail",sendmail);
-
+app.use("/api/elasticSearchfunc", elasticSearchfunc);
+app.use("/api/sendMail", sendmail);
 
 server.listen(3000, () => {
-  console.log('Socket server listening on port ', PORT);
+  console.log("Socket server listening on port ", PORT);
 });

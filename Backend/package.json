@@ -4,12 +4,16 @@
     "@google/genai": "^1.16.0",
     "@google/generative-ai": "^0.24.1",
     "@prisma/client": "^6.9.0",
+    "bcrypt": "^6.0.0",
     "cors": "^2.8.5",
     "crypto": "^1.0.1",
     "express": "^5.1.0",
+    "express-session": "^1.18.2",
     "imapflow": "^1.0.195",
     "nodemailer": "^7.0.6",
     "nodemon": "^3.1.10",
+    "passport": "^0.7.0",
+    "passport-local": "^1.0.0",
     "socket.io": "^4.8.1",
     "ts-node": "^10.9.2"
   },
@@ -19,12 +23,16 @@
     "start": "node dist/index.js"
   },
   "devDependencies": {
+    "@types/bcrypt": "^6.0.0",
     "@types/cors": "^2.8.19",
     "@types/dotenv": "^8.2.3",
     "@types/express": "^5.0.3",
+    "@types/express-session": "^1.18.2",
     "@types/mailparser": "^3.4.6",
     "@types/node": "^24.3.0",
     "@types/nodemailer": "^7.0.1",
+    "@types/passport": "^1.0.17",
+    "@types/passport-local": "^1.0.38",
     "prisma": "^6.9.0"
   }
 }
