@@ -8,7 +8,12 @@ export default async function imapConnection(): Promise<ImapFlow[]> {
     let clients:ImapFlow[] =[]; 
     
     try {
-        const Accounts:Accounts[] = JSON.parse(process.env.USER_ACCOUNTS!);
+        const Accounts:Accounts[] = JSON.parse(process.env.USER_ACCOUNTS|| "[]") ;
+        console.log("Accounts",Accounts)
+        if (!Accounts.length) {
+            console.log("No accounts found");
+            return [];
+        }
         for(let account of Accounts) { 
             const client = new ImapFlow({ host: 'imap.gmail.com',
                 port: 993,
@@ -21,7 +26,7 @@ export default async function imapConnection(): Promise<ImapFlow[]> {
             clients.push(client);
         }
         }catch (error) {
-            console.error('Error connecting to IMAP:', error); 
+            console.error('Error connecting to IMAP'); 
             return [];
         } 
         return clients;

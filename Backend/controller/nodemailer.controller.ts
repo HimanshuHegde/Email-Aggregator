@@ -4,7 +4,7 @@ import { Accounts } from "../types/email";
 import { Request, Response } from "express";
 import { indexingEmail } from "../server functions/elasticSearchinit";
 
-const Account:Accounts[] = JSON.parse(process.env.USER_ACCOUNTS!);
+const Account:Accounts[] = JSON.parse(process.env.USER_ACCOUNTS! || "[]") ;
 
 // function to send emails
 export default async function sendEmail(req: Request, res: Response) {

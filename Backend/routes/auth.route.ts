@@ -1,33 +1,66 @@
 import Router from "express";
-import passport from 'passport'
 import { PrismaClient } from "../generated/prisma";
 import bcrypt from "bcrypt";
-
+import jwt from "jsonwebtoken";
+import authenticateToken from "../server functions/middleware";
+const JWT_SECRET = process.env.JWT_SECRET!
 const prisma = new PrismaClient();
 const router = Router();
 
-router.post("/login", (req, res, next) => {
-  passport.authenticate("local", (err: any, user:any, info: any) => {
-    if (err) return next(err);
-    if (!user) {
-      return res.status(401).json({ success: false, message: info.message });
-    }
-    req.logIn(user, (err) => {
-      if (err) return next(err);
-      return res.json({ success: true, user });
+router.post("/login", async (req, res, next) => {
+  try {
+    const { email, password } = req.body;
+    
+    const user = await prisma.user.findUnique({
+      where: { email }
     });
-  })(req, res, next);
+    
+    if (!user) {
+      return res.status(401).json({ 
+        success: false, 
+        message: 'Invalid credentials' 
+      });
+    }
+    
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      return res.status(401).json({ 
+        success: false, 
+        message: 'Invalid credentials' 
+      });
+    }
+  
+
+    const token = jwt.sign(
+      { 
+        userId: user.id,
+        email: user.email 
+      },
+      JWT_SECRET,
+      { expiresIn: '7d' }
+    );
+    
+    res.json({
+      success: true,
+      token,
+      user: {
+        id: user.id,
+        email: user.email,
+        name: user.name
+      }
+    });
+    
+  } catch (error) {
+    res.status(500).json({ 
+      success: false, 
+      message: 'Server error' 
+    });
+  }
 });
 
 router.post('/logout', function(req, res, next) {
-  req.logout(function(err) {
-    if (err) { return next(err); }
-    req.session?.destroy((err) => {
-      if (err) return next(err);
-      res.clearCookie('connect.sid');
-      return res.json({ success: true, message: 'Logged out successfully' });
-    });
-  });
+  // Since we're using JWTs, logout can be handled on the client side by deleting the token.
+  res.json({ success: true, message: 'Logged out successfully' });
 });
 
 
@@ -50,15 +83,43 @@ router.post("/signup", async (req, res, next) => {
       },
     });
 
-    req.logIn(user, (err) => {
-      if (err) return next(err);
-      return res.json({ success: true, user });
+    const token = jwt.sign(
+      { 
+        userId: user.id,
+        email: user.email 
+      },
+      JWT_SECRET,
+      { expiresIn: '7d' }
+    );
+    
+    res.json({
+      success: true,
+      token,
+      user: {
+        id: user.id,
+        email: user.email,
+        name: user.name
+      }
     });
 
   } catch (err) {
     next(err); 
   }
 });
+
+
+router.get('/me', authenticateToken, (req, res) => {
+  
+  const { id, email, name } = (req.user as any) || {};
+  res.json({
+    authenticated: true,
+    user: { id, email, name }
+  });
+});
+
+
+
+
 
 export default router;
 

@@ -3,13 +3,8 @@ import elasticSearchfunc from "./routes/elasticSearchFunc.route";
 import http from "http";
 import CORS from "cors";
 import express from "express";
-import session from "express-session";
 import authRoutes from "./routes/auth.route";
-import passport from "passport";
-import { PrismaClient } from "./generated/prisma";
 import imapConnection from "./server functions/imapConnection";
-import { Strategy as LocalStrategy } from 'passport-local';
-import bcrypt from 'bcrypt'
 import { Server } from "socket.io";
 import { indexingEmail } from "./server functions/elasticSearchinit";
 import { createEmailIndex } from "./server functions/elasticSearchinit";
@@ -23,7 +18,7 @@ const server = http.createServer(app);
 // socket
 const io = new Server(server, {
   cors: {
-    origin: "https://reach-inbox-assign.vercel.app/",
+    origin: "http://localhost:5173",
     methods: ["GET", "POST"],
   },
 });
@@ -80,56 +75,28 @@ io.on("connection", (socket) => {
   await createEmailIndex();
 })();
 
-app.use(CORS());
-app.use(
-  session({
-    secret: process.env.SESSION_SECRET || "supersecret",
-    resave: false,
-    saveUninitialized: false,
-    cookie: {
-      httpOnly: true,
-      sameSite: "lax",
-      secure: process.env.NODE_ENV === "production",
-       maxAge: 1000 * 60 * 60 * 24 * 7,
-    },
-  })
-);
-
-
-// passport auth js
-const prisma = new PrismaClient();
-passport.use(new LocalStrategy(async function verify(username, password, cb) {
-    try{
-        const user = await prisma.user.findUnique({
-            where: {
-                email: username
-            }
-        });
-        if (!user) {
-            return cb(null, false, { message: 'Incorrect username.' });
-        }
-        const isMatch = await bcrypt.compare(password, user.password);
-        if (!isMatch) {
-            return cb(null, false, { message: 'Incorrect password.' });
-        }
-        return cb(null, user);
-    }catch(err){
-        return cb(err);
-    }
-}));
-
-passport.serializeUser((user: any, done) => {
-  done(null, user.id);
-});
-
-passport.deserializeUser(async (id: number, done) => {
-  try {
-    const user = await prisma.user.findUnique({ where: { id } });
-    done(null, user || false);
-  } catch (err) {
-    done(err);
+app.use(CORS(
+  {
+    origin:"http://localhost:5173",
+    credentials:true
   }
-});
+));
+// app.use(
+//   session({
+//     secret: process.env.SESSION_SECRET || "supersecret",
+//     resave: false,
+//     saveUninitialized: false,
+//     cookie: {
+//       httpOnly: true,
+//       sameSite: "lax",
+//       secure: process.env.NODE_ENV === "production",
+//       maxAge: 1000 * 60 * 60 * 24 * 7,
+//     },
+//   })
+// );
+
+
+
 
 //routes
 
