@@ -1,147 +1,118 @@
-import { Client } from "@elastic/elasticsearch";
 import { Request, Response } from "express";
-import { Email } from "../types/email";
-import crypto from "crypto";
-
-const client = new Client({
-  node: 'https://my-elasticsearch-project-c4187a.es.us-central1.gcp.elastic.cloud:443',
-  auth: {
-    apiKey: 'eF8zMkFwa0J3d1lmeTdPSmQ4ODM6YXpTUGM0S3FCaU15UEdXRGtpX05qUQ=='
-  },
-});
-
+import { Accounts, Email } from "../types/email";
+import { PrismaClient,Prisma } from "../generated/prisma";
+import { createBulkEmails, createEmailDB, searchEmails } from "../server functions/CRUD/emails";
+import { getAccountByEmail } from "../server functions/CRUD/accounts";
+const prisma = new PrismaClient();
 
 // function to search emails based on a query string
-export async function searchEmails(req: Request, res: Response) {
+export async function searchEmail(req: Request, res: Response) {
   const query = req.query.q as string;
-  const result = await client.search({
-    index: "emails",
-    size: 50,
-    body: {
-      query: {
-        multi_match: {
-          query,
-          fields: [
-            "subject",
-            "body",
-            "from",
-            "folder",
-            "to",
-            "account",
-            "name",
-          ],
-          fuzziness: "AUTO",
-        },
-      },
-    },
-  });
-
+  const result = await searchEmails(query);
   res
     .status(200)
-    .json(result.hits.hits.map((hit) => ({ id: hit._id, ...hit._source! })));
+    .json({ total: result.length, emails: result });
 }
 
 // function to create emails
 export async function createEmail(req: Request, res: Response) {
-  const email: Email = req.body;
+  const email = req.body;
   email.folder = "[Gmail]/Sent Mail";
   email.account = email.from;
-  const result = await client.index({
-    index: "emails",
-    body: email,
-    refresh: true,
-  });
+  const result = await getAccountByEmail(email.from!);
+    if(result){
+        email['accountId'] = result.ownerId;
+    }
+  await createEmailDB(email);
+  res.status(201).json({ message: "Email created" });
 
-  res.status(201).json({ id: result._id, ...email });
 }
 
-// function to get mail bys id
-export async function getEmailById(req: Request, res: Response) {
+export async function deleteAccounts(req: Request, res: Response) {
   const { id } = req.params;
-  const result = await client.get({
-    index: "emails",
-    id,
-  });
-
-  res.status(200).json({ id: result._id, ...result._source! });
-}
-
-// function to update email by id
-export async function updateEmail(req: Request, res: Response) {
-  const { id } = req.params;
-  const updates: Partial<Email> = req.body;
-  await client.update({
-    index: "emails",
-    id,
-    body: {
-      doc: updates,
+  await prisma.account.delete({
+    where: {
+      id: Number(id),
     },
-    refresh: true,
   });
+  res.status(200).json({ message: "Account deleted" });
+}
+export async function addAccounts(res: Response,req:Request){
+  const accounts = req.body;
+  for(const account of accounts){
+    account['owner'] = (req.user as Accounts).userId
+  }
+  await prisma.account.createMany({
+    data: accounts as Prisma.AccountCreateManyInput[]
+  });
+  res.status(201).json({ message: "Accounts added" });
   
-  res.status(200).json({ id, ...updates });
 }
 
-// function to delete email by id
-export async function deleteEmail(req: Request, res: Response) {
-  const { id } = req.params;
-  await client.delete({
-    index: "emails",
-    id,
-    refresh: true,
-  });
+// // function to get mail bys id
+// export async function getEmailById(req: Request, res: Response) {
+//   const { id } = req.params;
+//   const result = await client.get({
+//     index: "emails",
+//     id,
+//   });
 
-  res.status(200).json({ message: `Email with id ${id} deleted.` });
-}
+//   res.status(200).json({ id: result._id, ...result._source! });
+// }
 
-function generateId(email: Email): string {
-  if (email.id) return email.id;
-  return crypto
-    .createHash("sha1")
-    .update(`${email.subject}-${email.date}-${email.from}`)
-    .digest("hex");
-}
+// // function to update email by id
+// export async function updateEmail(req: Request, res: Response) {
+//   const { id } = req.params;
+//   const updates: Partial<Email> = req.body;
+//   await client.update({
+//     index: "emails",
+//     id,
+//     body: {
+//       doc: updates,
+//     },
+//     refresh: true,
+//   });
+  
+//   res.status(200).json({ id, ...updates });
+// }
+
+// // function to delete email by id
+// export async function deleteEmail(req: Request, res: Response) {
+//   const { id } = req.params;
+//   await client.delete({
+//     index: "emails",
+//     id,
+//     refresh: true,
+//   });
+
+//   res.status(200).json({ message: `Email with id ${id} deleted.` });
+// }
+
+
 
 // function to bulk create emails
 export async function BulkcreateEmail(emailList: Email[]) {
   try {
     
-
-    if (Array.isArray(emailList)) {
       const bulkOps: any[] = [];
 
       for (const email of emailList) {
-        email.folder = email.folder ?? "[Gmail]/All Mail";
-        email.account = email.folder ==="Sent" ? email.from : email.to;
+        // email.folder = email.folder ?? "[Gmail]/All Mail";
+       
+        let account = await getAccountByEmail( email.folder ==="Sent" ? email.from : email.to);
+        if(account){
+            email['accountId'] = account.ownerId;
 
-        const id = generateId(email);
 
-        bulkOps.push({ create: { _index: "emails", _id: id } }); 
         bulkOps.push(email);
       }
+    }
 
-      const result = await client.bulk({
-        refresh: true,
-        body: bulkOps,
-      });
+      await createBulkEmails(bulkOps);
+
 
       
-    } else {
-      const email: Email = emailList;
-      email.folder = email.folder ?? "[Gmail]/All Mail";
-      email.account = email.from;
-
-      const id = generateId(email);
-
-      const result = await client.index({
-        index: "emails",
-        id,
-        body: email,
-        refresh: true,
-        op_type: "create",
-      });
-
-    }
+    
   } catch (err: any) {
     console.error("Error creating email(s):", err);
   }

@@ -1,19 +1,21 @@
 export interface Email {
-  id?: string;
-  subject: string;
-  body: string;
-  from: string;
-  to: string;
-  account: string;
-  folder: string;
-  name?: string;
-  aiLabel?: string;
-  date?: Date; 
+  id ?: number
+  subject :string
+  body :string
+  from :string
+  to :string
+  folder :string
+  name :string
+  aiLabel :string
+  date :Date 
+  accountId :number
+  // account? :string
 }
 
 export interface Accounts{
     email: string;
-    password: string;
+    AppPass: string;
+    userId?: number;
 }
 
 export interface Res {

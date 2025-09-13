@@ -6,9 +6,10 @@ import express from "express";
 import authRoutes from "./routes/auth.route";
 import imapConnection from "./server functions/imapConnection";
 import { Server } from "socket.io";
-import { indexingEmail } from "./server functions/elasticSearchinit";
-import { createEmailIndex } from "./server functions/elasticSearchinit";
 import sendmail from "./routes/nodemailer.route";
+import { createEmailDB } from "./server functions/CRUD/emails";
+import { getAccountByEmail } from "./server functions/CRUD/accounts";
+import { classifyEmail } from "./server functions/aiClassifier";
 const app = express();
 const PORT = process.env.PORT || 3000;
 app.use(express.json());
@@ -40,17 +41,23 @@ io.on("connection", (socket) => {
             envelope: true,
             uid: true,
           })) {
+            let account = await getAccountByEmail(
+              message.envelope?.to![0]?.address!
+            );
+            let classify = await classifyEmail(message.envelope?.subject!,message.envelope?.subject!);
             const object = {
               subject: message.envelope?.subject!,
               name: message.envelope?.from![0]?.name!,
               from: message.envelope?.from![0]?.address!,
               date: message.envelope?.date!,
               to: message.envelope?.to![0]?.address!,
-              account: message.envelope?.to![0]?.address!,
+              aiLabel: classify,
               folder: "INBOX",
               body: message.envelope?.subject!,
+              accountId: account?.ownerId!,
             };
-            await indexingEmail(object);
+
+            await createEmailDB(object);
             emittingIdle(object);
           }
         } finally {
@@ -71,9 +78,7 @@ io.on("connection", (socket) => {
 
 
 // function to create the index at the start of the server
-(async function () {
-  await createEmailIndex();
-})();
+
 
 app.use(CORS(
   {

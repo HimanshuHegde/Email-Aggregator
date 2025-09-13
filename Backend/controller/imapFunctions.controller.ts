@@ -3,10 +3,11 @@ import imapConnection from "../server functions/imapConnection";
 import { Request, Response } from "express";
 import { BulkcreateEmail } from "./elasticSearchFunction.controller";
 import { Email, Res } from "../types/email";
+import { createBulkEmails } from "../server functions/CRUD/emails";
 
 export async function fetchLast30Days(req: Request, res: Response) {
   let response: Res[] = [];
-  let bulk:Email[] = [];
+  let bulk:any[] = [];
   const clients: ImapFlow[] = await imapConnection();
   console.log("clients.length",clients.length)
   if (clients.length === 0) {
@@ -49,7 +50,6 @@ export async function fetchLast30Days(req: Request, res: Response) {
           });
           bulk.push( { from: message.envelope?.from![0]?.address!,
               to: message.envelope?.to![0]?.address!,
-              account: folder! ==="Sent" ? message.envelope?.from![0]?.address! : message.envelope?.to![0]?.address!,
               folder : folder!,
               body: message.envelope?.subject!,
               subject: message.envelope?.subject!,
@@ -68,5 +68,5 @@ export async function fetchLast30Days(req: Request, res: Response) {
     response = response.sort((a, b) => b.message.date.getTime() - a.message.date.getTime());
     bulk = bulk.sort((a, b) => b.date!.getTime() - a.date!.getTime());
   res.status(200).json(response);
-  await BulkcreateEmail(bulk)
+  await createBulkEmails(bulk);
 }

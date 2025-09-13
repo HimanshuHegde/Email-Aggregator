@@ -21,13 +21,15 @@ model Emails{
   aiLabel String
   date DateTime
   account Account @relation(fields: [accountId], references: [id])
-  accountId Int
+  accountId Int 
+
+  @@unique([accountId, from, to, subject, date, body])
 }
 
 model Account{
   id Int @id @default(autoincrement())
   email String @unique
-  AppPass String
+  AppPass Json
   owner User @relation(fields: [ownerId], references: [id])
   ownerId Int
   emails Emails[]
