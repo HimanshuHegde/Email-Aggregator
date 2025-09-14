@@ -1,13 +1,21 @@
-import{ useState } from "react";
+import{ useState,useContext } from "react";
+import { UserContext } from "../../lib/context";
 
 export type Account = {
   email: string;
-  appPassword: string;
+  AppPass: string;
 };
 
-export default function EmailAccountsForm() {
+interface EmailAccountsFormProps {
+  onSave: () => void;
+}
+
+export default function EmailAccountsForm({onSave}:EmailAccountsFormProps) {
+  const context = useContext(UserContext);
+  
+  const {setCreateAccounts} = context!;
   const [accounts, setAccounts] = useState<Account[]>([
-    { email: "", appPassword: "" },
+    { email: "", AppPass: "" },
   ]);
 
   function updateAccount(index: number, key: keyof Account, value: string) {
@@ -19,19 +27,33 @@ export default function EmailAccountsForm() {
   }
 
   function addAccount() {
-    setAccounts((prev) => [...prev, { email: "", appPassword: "" }]);
+    setAccounts((prev) => [...prev, { email: "", AppPass: "" }]);
   }
 
   function removeAccount(index: number) {
     setAccounts((prev) => prev.filter((_, i) => i !== index));
   }
 
-  function handleSave() {
+  async function handleSave() {
     // Replace this with an API call to persist accounts securely on the backend
     // For demo purposes we just log the JSON.
-    const sanitized = accounts.filter((a) => a.email && a.appPassword);
-    console.log("Save accounts:", JSON.stringify(sanitized));
-    alert("Accounts saved to console (replace this with API call)");
+    console.log('entered the function')
+    const token = localStorage.getItem("token");
+    if (!token) {
+      console.error("No auth token found");
+      return;
+    }
+    const sanitized = accounts.filter((a) => a.email && a.AppPass);
+    await fetch("http://localhost:3000/api/elasticSearchfunc/addAccounts", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        'authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify(sanitized),
+      },
+    );
+    setCreateAccounts((prev)=> [...prev,...sanitized]);
   }
 
   return (
@@ -64,8 +86,8 @@ export default function EmailAccountsForm() {
                       <label className="text-sm text-slate-600 mt-3 block">App password</label>
                       <input
                         type="password"
-                        value={acct.appPassword}
-                        onChange={(e) => updateAccount(idx, "appPassword", e.target.value)}
+                        value={acct.AppPass}
+                        onChange={(e) => updateAccount(idx, "AppPass", e.target.value)}
                         placeholder="16-character app password"
                         className="mt-1 w-full rounded-lg border px-3 py-2 focus:outline-none focus:ring-2 focus:ring-slate-200"
                       />
@@ -104,7 +126,7 @@ export default function EmailAccountsForm() {
               </button>
 
               <button
-                onClick={handleSave}
+                onClick={()=>{handleSave();onSave()}}
                 className="ml-auto px-5 py-2 rounded-2xl bg-black text-white shadow"
               >
                 Save

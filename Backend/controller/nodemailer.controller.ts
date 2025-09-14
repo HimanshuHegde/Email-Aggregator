@@ -1,11 +1,8 @@
 import nodemailer from "nodemailer";
 import { Email } from "../types/email";
 import { Request, Response } from "express";
-import { indexingEmail } from "../server functions/elasticSearchinit";
 import { getAccountByEmail } from "../server functions/CRUD/accounts";
-import bcrypt from "bcrypt";
 import { decrypt } from "../server functions/crypto";
-import { JsonObject } from "../generated/prisma/runtime/library";
 import { createEmailDB } from "../server functions/CRUD/emails";
 
 

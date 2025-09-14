@@ -1,8 +1,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState,useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import type { Email } from "../type/email";
-import searchEmails, { fetchLast30Days } from "../api";
+import searchEmails, {  deleteAccount, fetchLast30Days } from "../api";
+import {jwtDecode} from "jwt-decode"
+
 import {
   AtSign,
   Filter,
@@ -20,12 +22,15 @@ import { io } from "socket.io-client";
 import PrettyDate from "../components/date";
 import { CgAdd, CgClose } from "react-icons/cg";
 import EmailAccountsForm from "../components/accountForm";
-// import EmailAccountsForm from "../components/accountForm";
+import { UserContext } from "../../lib/context";
+import ConfirmModal from "../components/popUp";
 
 export default function Dashboard() {
+  const {createAccounts, setCreateAccounts} = useContext(UserContext)!;
   const navigate = useNavigate();
   const [emails, setEmails] = useState<Email[]>([]);
   const [filteredEmail, setFilteredEmail] = useState<Email[]>(emails);
+  const [selectDeleteAccount, setDeleteAccount] = useState("");
   const [isComposeOpen, setIsComposeOpen] = useState(false);
   const [addaccount, setAddaccount] = useState(false);
   const [form, setForm] = useState({
@@ -36,13 +41,15 @@ export default function Dashboard() {
     body: "",
   });
   const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
   ) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [selected, setSelected] = useState<Email | null>(null);
+  const [modalOpen, setModalOpen] = useState(false);
+  
 
   const [q, setQ] = useState("");
   const [selectedAccount, setSelectedAccount] = useState<
@@ -66,18 +73,35 @@ export default function Dashboard() {
       });
   }
 
+  function onSave(){
+    setLoading(true)
+    setAddaccount(false)
+  }
+
   // Initial load from IMAP (last 30 days)
   useEffect(() => {
+    setAddaccount(false);
+    console.log(createAccounts)
     const socket = io("http://localhost:3000", {
       transports: ["websocket"],
     });
+    const token = localStorage.getItem("token");
+    const decoded = jwtDecode(token!)
     socket.on("connect", () => {
       console.log("Connected to server");
+      socket.emit("authenticate", { decoded });
+
     });
     socket.on("new-email", (newEmail: Email) => {
       setEmails((prev) => [newEmail, ...prev]);
       setFilteredEmail((prev) => [newEmail, ...prev]);
     });
+    
+    return () => {
+      socket.disconnect();
+    };
+  }, []);
+  useEffect(() => {
     (async () => {
       setLoading(true);
       setError(null);
@@ -91,10 +115,7 @@ export default function Dashboard() {
         setLoading(false);
       }
     })();
-    return () => {
-      socket.disconnect();
-    };
-  }, []);
+  }, [createAccounts]);
 
   // Derive accounts & folders from emails
   const accounts = useMemo(
@@ -163,6 +184,18 @@ export default function Dashboard() {
     }
   };
 
+   const handleDelete = async () => {
+    console.log('sdfsdfsdf',selectDeleteAccount);
+    // Your delete logic here
+    const res = await deleteAccount(selectDeleteAccount);
+    if (res) {
+      setModalOpen(false);
+      setCreateAccounts((prev) => prev.filter((a) => a.email !== selectDeleteAccount));
+    }else{
+      alert("Failed to delete account");
+    }
+  };
+
   async function handleRefresh() {
     setLoading(true);
     setError(null);
@@ -196,6 +229,7 @@ export default function Dashboard() {
                 className="w-full pl-9 pr-9 py-2 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-slate-400"
               />
               <Search className="absolute left-2 top-2.5 h-5 w-5 text-slate-500" />
+              
               {q && (
                 <button
                   type="button"
@@ -216,10 +250,27 @@ export default function Dashboard() {
             >
               <RefreshCw className="h-4 w-4" /> Refresh
             </button>
+            {emails.length > 0 && (
+              <button
+              onClick={() => setAddaccount(!addaccount)}
+              className="inline-flex items-center gap-2 px-3 py-2 rounded-xl border border-slate-300 hover:bg-slate-100 active:scale-[0.98"
+              title="add accounts"
+            >
+              {!addaccount ? (
+                <>
+                  <CgAdd className="h-4 w-4" /> Add Accounts
+                </>
+              ) : (
+                <>
+                  <CgClose className="h-4 w-4" /> Close
+                </>
+              )}
+            </button>
+            )}
             <button
               onClick={handleLogout}
               className="inline-flex items-center gap-2 px-3 py-2 rounded-xl border border-slate-300 hover:bg-red-100 active:scale-[0.98] ml-auto"
-              title="Fetch last 30 days"
+              title="Logout"
             >
               <LogOutIcon className="h-4 w-4" /> LogOut
             </button>
@@ -228,6 +279,7 @@ export default function Dashboard() {
       </header>
 
       <main className="max-w-7xl mx-auto px-4 py-4 grid grid-cols-12 gap-4">
+        
         {/* Sidebar Filters */}
         <aside className="col-span-12 md:col-span-3 lg:col-span-3">
           <div className="bg-white rounded-2xl shadow p-4 space-y-5 border border-slate-200">
@@ -239,7 +291,7 @@ export default function Dashboard() {
                 Filter by account and folder.
               </div>
             </div>
-
+            
             <div>
               <div className="flex items-center gap-2 mb-2 text-sm font-medium">
                 <AtSign className="h-4 w-4" /> Accounts
@@ -262,17 +314,21 @@ export default function Dashboard() {
                       setSelectedAccount(acc!);
                       setFilteredEmail(emails);
                     }}
-                    className={`px-3 py-1.5 rounded-full border text-sm ${
+                    className={`flex justify-center items-center gap-2 px-3 py-1.5 rounded-full border text-sm ${
                       selectedAccount === acc
                         ? "bg-slate-900 text-white border-slate-900"
                         : "border-slate-300 hover:bg-slate-100"
                     }`}
                   >
-                    {acc}
+                    <button onClick={()=>{setModalOpen(true); setDeleteAccount(acc!) }}>
+                      <CgClose className="h-4 w-4" />
+                    </button>
+
+                    <span>{acc}</span>
                   </button>
                 ))}
               </div>
-            </div>
+            </div>  
 
             <div>
               <div className="flex items-center gap-2 mb-2 text-sm font-medium">
@@ -316,7 +372,7 @@ export default function Dashboard() {
             {/* Compose button */}
             <div className="flex justify-center">
               <button
-                onClick={() => setIsComposeOpen(true)}
+                onClick={() => {setIsComposeOpen(true);setAddaccount(false);  }}
                 className="bg-black text-white px-4 py-2 rounded-xl shadow-md hover:bg-gray-800"
               >
                 Compose
@@ -344,7 +400,7 @@ export default function Dashboard() {
               {error && !loading && (
                 <li className="p-4 text-red-600 text-sm">{error}</li>
               )}
-              {!accounts.length &&(<div className="flex justify-between items-center p-4 flex-col">
+              {!loading &&!accounts.length &&(<div className="flex justify-between items-center p-4 flex-col">
                 <li className="p-6 text-sm text-slate-500">No accounts configured. Please add accounts in the backend environment variables.</li>
                 <button
               onClick={() => setAddaccount(!addaccount)}
@@ -371,7 +427,7 @@ export default function Dashboard() {
               {filtered.map((e) => (
                 <li
                   key={e.id || e.subject + e.date}
-                  onClick={() => setSelected(e)}
+                  onClick={() => {setSelected(e); setIsComposeOpen(false); setAddaccount(false)}}
                   className={`p-4 cursor-pointer hover:bg-slate-50 ${
                     selected?.id === e.id ? "bg-slate-50" : ""
                   }`}
@@ -403,8 +459,8 @@ export default function Dashboard() {
 
         {/* Email Detail and compose section*/}
         <section className="col-span-12 md:col-span-5 lg:col-span-5">
-          {addaccount && (
-            <EmailAccountsForm />
+          {addaccount && !loading && (
+            <EmailAccountsForm onSave={onSave}/>
           )}
           {!addaccount &&(isComposeOpen ? (
             <div className=" flex items-center justify-center">
@@ -420,15 +476,22 @@ export default function Dashboard() {
                     className="w-full border rounded-xl p-2"
                     required
                   />
-                  <input
-                    type="email"
-                    name="from"
-                    placeholder="From"
-                    value={form.from}
-                    onChange={handleChange}
-                    className="w-full border rounded-xl p-2"
-                    required
-                  />
+                 <select
+                  name="from"
+                  value={form.from}
+                  onChange={handleChange}
+                  className="w-full border rounded-xl p-2"
+                  required
+                >
+                  <option value="" disabled>
+                    Select sender
+                  </option>
+                  {createAccounts.map((account) => (
+                    <option key={account.email} value={account.email}>
+                      {account.email}
+                    </option>
+                  ))}
+                </select>
                   <input
                     type="email"
                     name="to"
@@ -525,6 +588,13 @@ export default function Dashboard() {
           ))}
         </section>
       </main>
+      {/* Confirm Modal */}
+      <ConfirmModal
+        isOpen={modalOpen}
+        onClose={() => {setModalOpen(false); setDeleteAccount("")}}
+        onConfirm={()=>{handleDelete(); setLoading(true);setModalOpen(false);setDeleteAccount("");setSelected(null)}}
+      />
+    
     </div>
   );
 }

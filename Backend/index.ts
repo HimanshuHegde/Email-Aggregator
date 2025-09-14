@@ -25,19 +25,20 @@ const io = new Server(server, {
 });
 io.on("connection", (socket) => {
   console.log("a user connected");
-  (async function () {
-    const clients = await imapConnection();
+  socket.on("authenicate", (data) => {
+    (async function () {
+    const clients = await imapConnection(Number(data.userId));
     if (clients.length === 0) {
       console.log("No clients connected");
       return;
     }
     for (let client of clients) {
-      await client.mailboxOpen("INBOX");
+      await client?.client.mailboxOpen("INBOX");
       // enabling the idling to listen for new emails
-      client.on("exists", async () => {
-        let lock = await client.getMailboxLock("INBOX");
+      client?.client.on("exists", async () => {
+        let lock = await client.client.getMailboxLock("INBOX");
         try {
-          for await (let message of client.fetch("*", {
+          for await (let message of client.client.fetch("*", {
             envelope: true,
             uid: true,
           })) {
@@ -66,6 +67,8 @@ io.on("connection", (socket) => {
       });
     }
   })();
+  });
+  
   let prevobject: any = {};
   function emittingIdle(object: any) {
     if (JSON.stringify(prevobject) != JSON.stringify(object)) {

@@ -11,6 +11,6 @@ router.get("/",authenticateToken,searchEmail);
 router.post("/",authenticateToken, createEmail);
 router.post("/bulk",authenticateToken, BulkcreateEmail); 
 router.post("/addAccounts",authenticateToken, addAccounts);
-router.delete("/deleteAccount",authenticateToken, deleteAccounts    );
+router.delete("/deleteAccounts/:email",authenticateToken, deleteAccounts );
 
 export default router;

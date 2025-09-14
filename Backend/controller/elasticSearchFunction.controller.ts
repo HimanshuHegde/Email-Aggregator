@@ -1,8 +1,9 @@
 import { Request, Response } from "express";
 import { Accounts, Email } from "../types/email";
 import { PrismaClient,Prisma } from "../generated/prisma";
-import { createBulkEmails, createEmailDB, searchEmails } from "../server functions/CRUD/emails";
-import { getAccountByEmail } from "../server functions/CRUD/accounts";
+import { createBulkEmails, createEmailDB,  deleteEmail,  searchEmails } from "../server functions/CRUD/emails";
+import { deleteAccount, getAccountByEmail } from "../server functions/CRUD/accounts";
+import { decrypt, encrypt } from "../server functions/crypto";
 const prisma = new PrismaClient();
 
 // function to search emails based on a query string
@@ -29,18 +30,19 @@ export async function createEmail(req: Request, res: Response) {
 }
 
 export async function deleteAccounts(req: Request, res: Response) {
-  const { id } = req.params;
-  await prisma.account.delete({
-    where: {
-      id: Number(id),
-    },
-  });
+  const { email } = req.params;
+  let resp = await getAccountByEmail(email);
+  await deleteEmail(resp?.id!)
+  await deleteAccount(email);
   res.status(200).json({ message: "Account deleted" });
 }
-export async function addAccounts(res: Response,req:Request){
-  const accounts = req.body;
+
+
+export async function addAccounts(req:Request,res: Response){
+  let accounts = req.body;
   for(const account of accounts){
-    account['owner'] = (req.user as Accounts).userId
+    account['AppPass'] = encrypt(account['AppPass'] as string);
+    account['ownerId'] = (req.user as Accounts).userId
   }
   await prisma.account.createMany({
     data: accounts as Prisma.AccountCreateManyInput[]
@@ -91,28 +93,11 @@ export async function addAccounts(res: Response,req:Request){
 
 
 // function to bulk create emails
-export async function BulkcreateEmail(emailList: Email[]) {
+export async function BulkcreateEmail(req: Request, res: Response) {
   try {
-    
-      const bulkOps: any[] = [];
-
-      for (const email of emailList) {
-        // email.folder = email.folder ?? "[Gmail]/All Mail";
-       
-        let account = await getAccountByEmail( email.folder ==="Sent" ? email.from : email.to);
-        if(account){
-            email['accountId'] = account.ownerId;
-
-
-        bulkOps.push(email);
-      }
-    }
-
-      await createBulkEmails(bulkOps);
-
-
-      
-    
+      const emailList = req.body;
+      console.log(emailList)
+      await createBulkEmails(emailList);
   } catch (err: any) {
     console.error("Error creating email(s):", err);
   }

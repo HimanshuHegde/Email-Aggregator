@@ -3,7 +3,11 @@ import type { Email } from "../type/email";
 const API_BASE = "http://localhost:3000";
 
 export async function fetchLast30Days(): Promise<Email[]> {
-  const res = await fetch(`${API_BASE}/api/imapfunctions`);
+  const res = await fetch(`${API_BASE}/api/imapfunctions`, {
+    headers: {
+      'authorization': `Bearer ${localStorage.getItem("token")}`
+    }
+  });
   if (!res.ok) throw new Error("Failed to fetch recent emails");
   const data = await res.json();
   if (Array.isArray(data)) {
@@ -15,21 +19,47 @@ export async function fetchLast30Days(): Promise<Email[]> {
 export default async function searchEmails(q: string): Promise<Email[]> {
   const url = new URL(`${API_BASE}/api/elasticSearchfunc`);
   url.searchParams.set("q", q || "");
-  const res = await fetch(url.toString());
+  const res = await fetch(url.toString(), {
+    headers: {
+      'authorization': `Bearer ${localStorage.getItem("token")}`
+    }
+  });
   if (!res.ok) throw new Error("Search failed");
   const data = await res.json();
-  if (data?.hits?.hits && Array.isArray(data.hits.hits)) {
-    return data.hits.hits.map((h: Email) => ({ id: h.id, ...(h || {}) } as Email));
-  }
-  if (Array.isArray(data)) {
-    return data.map((e: Email) => ({ id: e.id, ...(e) } as Email));
+  if (Array.isArray(data.emails)) {
+    return data.emails as Email[];
   }
   return [];
 }
 
+export async function deleteAccount(email: string): Promise<boolean> {
+  const res = await fetch(`${API_BASE}/api/elasticSearchfunc/deleteAccounts/${email}`, {
+    method: "DELETE",
+    headers: {
+      'authorization': `Bearer ${localStorage.getItem("token")}`
+    }
+  });
+  return res.ok;
+}
+
 export async function fetchEmailById(id: string): Promise<Email | null> {
-  const res = await fetch(`${API_BASE}/api/elasticSearchfunc/${id}`);
+  const res = await fetch(`${API_BASE}/api/elasticSearchfunc/${id}`,
+    { headers: {
+      'authorization': `Bearer ${localStorage.getItem("token")}`
+    } }
+  );
   if (!res.ok) return null;
   const data = await res.json();
   return data as Email;
 }
+
+export async function createBulkEmails(emails: Email[]) {
+  const res = await fetch(`${API_BASE}/api/elasticSearchfunc/bulk`, {
+    method: "POST",
+    headers: {
+      'authorization': `Bearer ${localStorage.getItem("token")}`
+    },
+    body: JSON.stringify(emails)
+  });
+  return res.ok;
+} 

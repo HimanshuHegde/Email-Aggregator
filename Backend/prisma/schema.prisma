@@ -21,7 +21,8 @@ model Emails{
   aiLabel String
   date DateTime
   account Account @relation(fields: [accountId], references: [id])
-  accountId Int 
+  accountId Int
+  search_vector Unsupported("tsvector")?
 
   @@unique([accountId, from, to, subject, date, body])
 }

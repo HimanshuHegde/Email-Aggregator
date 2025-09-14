@@ -59,9 +59,9 @@ export async function updateAccount(id: number, updates: Partial<Prisma.AccountU
         }
     });
 }
-export async function deleteAccount(id: number) {
+export async function deleteAccount(email: string) {
     await prisma.account.delete({
-        where: { id }
+        where: { email },
     });
 }
 

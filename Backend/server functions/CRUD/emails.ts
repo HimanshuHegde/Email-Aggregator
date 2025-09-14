@@ -6,7 +6,7 @@ const prisma = new PrismaClient();
 export async function searchEmails(query: string) {
   try {
     let result = await prisma.$queryRaw<Email[]>`
-  SELECT *
+  SELECT "id", "subject", "body","to", "from", "folder", "name", "aiLabel", "date", "accountId" ,"search_vector"::text AS "search_vector"
   FROM "Emails"
   WHERE "search_vector" @@ plainto_tsquery('english', ${query})
 `;
@@ -45,8 +45,8 @@ export async function updateEmail(
 
 export async function deleteEmail(id: number) {
   try {
-    await prisma.emails.delete({
-      where: { id },
+    await prisma.emails.deleteMany({
+      where: { accountId: id },
     });
   } catch (err) {
     console.error("Error deleting email:", err);
@@ -70,6 +70,9 @@ export async function createBulkEmails(
   emails: Prisma.EmailsUncheckedCreateInput[]
 ) {
   try {
+    for(let email of emails){
+      email.aiLabel = email.aiLabel ?? "Uncategorized";
+    }
     await prisma.emails.createMany({
       data: emails,
       skipDuplicates: true,
