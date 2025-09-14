@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
-import { Accounts, Email } from "../types/email";
-import { PrismaClient,Prisma } from "../generated/prisma";
+import { Accounts } from "../types/email";
+import { PrismaClient,Prisma } from "@prisma/client";
 import { createBulkEmails, createEmailDB,  deleteEmail,  searchEmails } from "../server functions/CRUD/emails";
 import { deleteAccount, getAccountByEmail } from "../server functions/CRUD/accounts";
 import { decrypt, encrypt } from "../server functions/crypto";

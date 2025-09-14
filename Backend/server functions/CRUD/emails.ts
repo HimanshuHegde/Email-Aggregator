@@ -1,4 +1,4 @@
-import { Prisma, PrismaClient } from "../../generated/prisma";
+import { Prisma, PrismaClient } from "@prisma/client";
 import { Email } from "../../types/email";
 import { getAccountByEmail, getMultipleAccountsByEmails } from "./accounts";
 const prisma = new PrismaClient();
