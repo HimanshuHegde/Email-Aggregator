@@ -83,7 +83,13 @@ io.on("connection", (socket) => {
 // function to create the index at the start of the server
 
 
-app.use(CORS());
+app.use(CORS(
+  {
+    origin: "https://email-aggregator-ten.vercel.app", 
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  credentials: true
+  }
+));
 // app.use(
 //   session({
 //     secret: process.env.SESSION_SECRET || "supersecret",
