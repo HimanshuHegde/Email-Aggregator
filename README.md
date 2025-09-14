@@ -49,8 +49,5 @@ Automatic email classification into:
 
 
 
-### Demo Webhook Testing
-- Visit https://webhook.site to get a unique webhook URL
-- Use this URL in your backend configuration
-- Monitor webhook calls in real-time
+
 
