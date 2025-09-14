@@ -1,9 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { useEffect, useMemo, useState,useContext } from "react";
+import { useEffect, useMemo, useState, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import type { Email } from "../type/email";
-import searchEmails, {  deleteAccount, fetchLast30Days } from "../api";
-import {jwtDecode} from "jwt-decode"
+import searchEmails, { deleteAccount, fetchLast30Days } from "../api";
+import { jwtDecode } from "jwt-decode";
 
 import {
   AtSign,
@@ -26,7 +26,7 @@ import { UserContext } from "../../lib/context";
 import ConfirmModal from "../components/popUp";
 
 export default function Dashboard() {
-  const {createAccounts, setCreateAccounts} = useContext(UserContext)!;
+  const { createAccounts, setCreateAccounts } = useContext(UserContext)!;
   const navigate = useNavigate();
   const [emails, setEmails] = useState<Email[]>([]);
   const [filteredEmail, setFilteredEmail] = useState<Email[]>(emails);
@@ -41,7 +41,9 @@ export default function Dashboard() {
     body: "",
   });
   const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >
   ) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
@@ -49,7 +51,6 @@ export default function Dashboard() {
   const [error, setError] = useState<string | null>(null);
   const [selected, setSelected] = useState<Email | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
-  
 
   const [q, setQ] = useState("");
   const [selectedAccount, setSelectedAccount] = useState<
@@ -73,30 +74,29 @@ export default function Dashboard() {
       });
   }
 
-  function onSave(){
-    setLoading(true)
-    setAddaccount(false)
+  function onSave() {
+    setLoading(true);
+    setAddaccount(false);
   }
 
   // Initial load from IMAP (last 30 days)
   useEffect(() => {
     setAddaccount(false);
-    console.log(createAccounts)
+    console.log(createAccounts);
     const socket = io("http://localhost:3000", {
       transports: ["websocket"],
     });
     const token = localStorage.getItem("token");
-    const decoded = jwtDecode(token!)
+    const decoded = jwtDecode(token!);
     socket.on("connect", () => {
       console.log("Connected to server");
       socket.emit("authenticate", { decoded });
-
     });
     socket.on("new-email", (newEmail: Email) => {
       setEmails((prev) => [newEmail, ...prev]);
       setFilteredEmail((prev) => [newEmail, ...prev]);
     });
-    
+
     return () => {
       socket.disconnect();
     };
@@ -184,14 +184,16 @@ export default function Dashboard() {
     }
   };
 
-   const handleDelete = async () => {
-    console.log('sdfsdfsdf',selectDeleteAccount);
+  const handleDelete = async () => {
+    console.log("sdfsdfsdf", selectDeleteAccount);
     // Your delete logic here
     const res = await deleteAccount(selectDeleteAccount);
     if (res) {
       setModalOpen(false);
-      setCreateAccounts((prev) => prev.filter((a) => a.email !== selectDeleteAccount));
-    }else{
+      setCreateAccounts((prev) =>
+        prev.filter((a) => a.email !== selectDeleteAccount)
+      );
+    } else {
       alert("Failed to delete account");
     }
   };
@@ -229,7 +231,7 @@ export default function Dashboard() {
                 className="w-full pl-9 pr-9 py-2 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-slate-400"
               />
               <Search className="absolute left-2 top-2.5 h-5 w-5 text-slate-500" />
-              
+
               {q && (
                 <button
                   type="button"
@@ -252,20 +254,20 @@ export default function Dashboard() {
             </button>
             {emails.length > 0 && (
               <button
-              onClick={() => setAddaccount(!addaccount)}
-              className="inline-flex items-center gap-2 px-3 py-2 rounded-xl border border-slate-300 hover:bg-slate-100 active:scale-[0.98"
-              title="add accounts"
-            >
-              {!addaccount ? (
-                <>
-                  <CgAdd className="h-4 w-4" /> Add Accounts
-                </>
-              ) : (
-                <>
-                  <CgClose className="h-4 w-4" /> Close
-                </>
-              )}
-            </button>
+                onClick={() => setAddaccount(!addaccount)}
+                className="inline-flex items-center gap-2 px-3 py-2 rounded-xl border border-slate-300 hover:bg-slate-100 active:scale-[0.98"
+                title="add accounts"
+              >
+                {!addaccount ? (
+                  <>
+                    <CgAdd className="h-4 w-4" /> Add Accounts
+                  </>
+                ) : (
+                  <>
+                    <CgClose className="h-4 w-4" /> Close
+                  </>
+                )}
+              </button>
             )}
             <button
               onClick={handleLogout}
@@ -279,7 +281,6 @@ export default function Dashboard() {
       </header>
 
       <main className="max-w-7xl mx-auto px-4 py-4 grid grid-cols-12 gap-4">
-        
         {/* Sidebar Filters */}
         <aside className="col-span-12 md:col-span-3 lg:col-span-3">
           <div className="bg-white rounded-2xl shadow p-4 space-y-5 border border-slate-200">
@@ -291,7 +292,7 @@ export default function Dashboard() {
                 Filter by account and folder.
               </div>
             </div>
-            
+
             <div>
               <div className="flex items-center gap-2 mb-2 text-sm font-medium">
                 <AtSign className="h-4 w-4" /> Accounts
@@ -320,7 +321,12 @@ export default function Dashboard() {
                         : "border-slate-300 hover:bg-slate-100"
                     }`}
                   >
-                    <button onClick={()=>{setModalOpen(true); setDeleteAccount(acc!) }}>
+                    <button
+                      onClick={() => {
+                        setModalOpen(true);
+                        setDeleteAccount(acc!);
+                      }}
+                    >
                       <CgClose className="h-4 w-4" />
                     </button>
 
@@ -328,7 +334,7 @@ export default function Dashboard() {
                   </button>
                 ))}
               </div>
-            </div>  
+            </div>
 
             <div>
               <div className="flex items-center gap-2 mb-2 text-sm font-medium">
@@ -363,16 +369,17 @@ export default function Dashboard() {
                 ))}
               </div>
             </div>
-
-           
           </div>
-             
+
           {/*compose*/}
           <div className="p-4">
             {/* Compose button */}
             <div className="flex justify-center">
               <button
-                onClick={() => {setIsComposeOpen(true);setAddaccount(false);  }}
+                onClick={() => {
+                  setIsComposeOpen(true);
+                  setAddaccount(false);
+                }}
                 className="bg-black text-white px-4 py-2 rounded-xl shadow-md hover:bg-gray-800"
               >
                 Compose
@@ -380,7 +387,7 @@ export default function Dashboard() {
             </div>
           </div>
         </aside>
-        
+
         {/* Email List */}
         <section className="col-span-12 md:col-span-4 lg:col-span-4">
           <div className="bg-white rounded-2xl shadow border border-slate-200 overflow-hidden">
@@ -400,201 +407,227 @@ export default function Dashboard() {
               {error && !loading && (
                 <li className="p-4 text-red-600 text-sm">{error}</li>
               )}
-              {!loading &&!accounts.length &&(<div className="flex justify-between items-center p-4 flex-col">
-                <li className="p-6 text-sm text-slate-500">No accounts configured. Please add accounts in the backend environment variables.</li>
-                <button
-              onClick={() => setAddaccount(!addaccount)}
-              className="inline-flex items-center gap-2 px-3 py-2 rounded-xl border bg-black text-white border-slate-300 hover:bg-gray-800 active:scale-[0.98]"
-              title="Fetch last 30 days"
-            >
-              {!addaccount ? (
-                <>
-                  <CgAdd className="h-4 w-4" /> Add Accounts
-                </>
-              ) : (
-                <>
-                  <CgClose className="h-4 w-4" /> Close
-                </>
-              )}
-            </button>
+              {!loading && !accounts.length && (
+                <div className="flex justify-between items-center p-4 flex-col">
+                  <li className="p-6 text-sm text-slate-500">
+                    No accounts configured. Please add accounts in the backend
+                    environment variables.
+                  </li>
+                  <button
+                    onClick={() => setAddaccount(!addaccount)}
+                    className="inline-flex items-center gap-2 px-3 py-2 rounded-xl border bg-black text-white border-slate-300 hover:bg-gray-800 active:scale-[0.98]"
+                    title="Fetch last 30 days"
+                  >
+                    {!addaccount ? (
+                      <>
+                        <CgAdd className="h-4 w-4" /> Add Accounts
+                      </>
+                    ) : (
+                      <>
+                        <CgClose className="h-4 w-4" /> Close
+                      </>
+                    )}
+                  </button>
                 </div>
               )}
-              {accounts.length && !loading && !error && filtered.length === 0 && (
+              {accounts.length &&
+              !loading &&
+              !error &&
+              filtered.length === 0 ? (
                 <li className="p-6 text-sm text-slate-500">
                   No emails match the current filters.
                 </li>
-              )}
-              {filtered.map((e) => (
-                <li
-                  key={e.id || e.subject + e.date}
-                  onClick={() => {setSelected(e); setIsComposeOpen(false); setAddaccount(false)}}
-                  className={`p-4 cursor-pointer hover:bg-slate-50 ${
-                    selected?.id === e.id ? "bg-slate-50" : ""
-                  }`}
-                >
-                  <div className="flex items-start gap-2">
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2">
-                        <div className="truncate font-medium">
-                          {e.subject || "(no subject)"}
+              ) : (
+                filtered.map((e) => (
+                  <li
+                    key={e.id || e.subject + e.date}
+                    onClick={() => {
+                      setSelected(e);
+                      setIsComposeOpen(false);
+                      setAddaccount(false);
+                    }}
+                    className={`p-4 cursor-pointer hover:bg-slate-50 ${
+                      selected?.id === e.id ? "bg-slate-50" : ""
+                    }`}
+                  >
+                    <div className="flex items-start gap-2">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2">
+                          <div className="truncate font-medium">
+                            {e.subject || "(no subject)"}
+                          </div>
+                          <Badge label={e.aiLabel} />
                         </div>
-                        <Badge label={e.aiLabel} />
+                        <div className="text-xs text-slate-500 truncate">
+                          From: {e.from} • To: {e.to}
+                        </div>
+                        <div className="text-xs text-slate-500 truncate">
+                          {e.account} • {e.folder}
+                        </div>
                       </div>
-                      <div className="text-xs text-slate-500 truncate">
-                        From: {e.from} • To: {e.to}
-                      </div>
-                      <div className="text-xs text-slate-500 truncate">
-                        {e.account} • {e.folder}
+                      <div className="text-xs text-slate-500 whitespace-nowrap">
+                        <PrettyDate value={e.date} />
                       </div>
                     </div>
-                    <div className="text-xs text-slate-500 whitespace-nowrap">
-                      <PrettyDate value={e.date} />
-                    </div>
-                  </div>
-                </li>
-              ))}
+                  </li>
+                ))
+              )}
             </ul>
           </div>
         </section>
 
         {/* Email Detail and compose section*/}
         <section className="col-span-12 md:col-span-5 lg:col-span-5">
-          {addaccount && !loading && (
-            <EmailAccountsForm onSave={onSave}/>
-          )}
-          {!addaccount &&(isComposeOpen ? (
-            <div className=" flex items-center justify-center">
-              <div className="bg-white p-6 rounded-2xl w-full max-w-lg shadow-lg">
-                <h2 className="text-xl font-semibold mb-4">New Email</h2>
-                <form onSubmit={handleSubmit} className="space-y-4">
-                  <input
-                    type="text"
-                    name="name"
-                    placeholder="name"
-                    value={form.name}
-                    onChange={handleChange}
-                    className="w-full border rounded-xl p-2"
-                    required
-                  />
-                 <select
-                  name="from"
-                  value={form.from}
-                  onChange={handleChange}
-                  className="w-full border rounded-xl p-2"
-                  required
-                >
-                  <option value="" disabled>
-                    Select sender
-                  </option>
-                  {createAccounts.map((account) => (
-                    <option key={account.email} value={account.email}>
-                      {account.email}
-                    </option>
-                  ))}
-                </select>
-                  <input
-                    type="email"
-                    name="to"
-                    placeholder="To"
-                    value={form.to}
-                    onChange={handleChange}
-                    className="w-full border rounded-xl p-2"
-                    required
-                  />
-                  <input
-                    type="text"
-                    name="subject"
-                    placeholder="Subject"
-                    value={form.subject}
-                    onChange={handleChange}
-                    className="w-full border rounded-xl p-2"
-                  />
-                  <textarea
-                    name="body"
-                    placeholder="Write your email..."
-                    value={form.body}
-                    onChange={handleChange}
-                    className="w-full border rounded-xl p-2 h-40"
-                    required
-                  />
+          {addaccount && !loading && <EmailAccountsForm onSave={onSave} />}
+          {!addaccount &&
+            (isComposeOpen ? (
+              <div className=" flex items-center justify-center">
+                <div className="bg-white p-6 rounded-2xl w-full max-w-lg shadow-lg">
+                  <h2 className="text-xl font-semibold mb-4">New Email</h2>
+                  <form onSubmit={handleSubmit} className="space-y-4">
+                    <input
+                      type="text"
+                      name="name"
+                      placeholder="name"
+                      value={form.name}
+                      onChange={handleChange}
+                      className="w-full border rounded-xl p-2"
+                      required
+                    />
+                    <select
+                      name="from"
+                      value={form.from}
+                      onChange={handleChange}
+                      className="w-full border rounded-xl p-2"
+                      required
+                    >
+                      <option value="" disabled>
+                        Select sender
+                      </option>
+                      {createAccounts.map((account) => (
+                        <option key={account.email} value={account.email}>
+                          {account.email}
+                        </option>
+                      ))}
+                    </select>
+                    <input
+                      type="email"
+                      name="to"
+                      placeholder="To"
+                      value={form.to}
+                      onChange={handleChange}
+                      className="w-full border rounded-xl p-2"
+                      required
+                    />
+                    <input
+                      type="text"
+                      name="subject"
+                      placeholder="Subject"
+                      value={form.subject}
+                      onChange={handleChange}
+                      className="w-full border rounded-xl p-2"
+                    />
+                    <textarea
+                      name="body"
+                      placeholder="Write your email..."
+                      value={form.body}
+                      onChange={handleChange}
+                      className="w-full border rounded-xl p-2 h-40"
+                      required
+                    />
 
-                  <div className="flex justify-end space-x-2">
-                    <button
-                      type="button"
-                      onClick={() => setIsComposeOpen(false)}
-                      className="px-4 py-2 rounded-xl border"
-                    >
-                      Cancel
-                    </button>
-                    <button
-                      type="submit"
-                      className="bg-black text-white px-4 py-2 rounded-xl shadow-md hover:bg-gray-700"
-                    >
-                      Send
-                    </button>
-                  </div>
-                </form>
-              </div>
-            </div>
-          ) : (
-            <div className="bg-white rounded-2xl shadow border border-slate-200 min-h-[72vh]">
-              {!selected ? (
-                <div className="p-8 text-center text-slate-500">
-                  <div className="flex justify-center mb-3">
-                    <Mail className="h-6 w-6" />
-                  </div>
-                  Select an email to view details.
+                    <div className="flex justify-end space-x-2">
+                      <button
+                        type="button"
+                        onClick={() => setIsComposeOpen(false)}
+                        className="px-4 py-2 rounded-xl border"
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        type="submit"
+                        className="bg-black text-white px-4 py-2 rounded-xl shadow-md hover:bg-gray-700"
+                      >
+                        Send
+                      </button>
+                    </div>
+                  </form>
                 </div>
-              ) : (
-                <article className="p-5 space-y-4">
-                  <header className="space-y-1">
-                    <div className="flex items-start gap-3">
-                      <h2 className="text-lg font-semibold leading-tight flex-1">
-                        {selected.subject || "(no subject)"}
-                      </h2>
-                      <Badge label={selected.aiLabel} />
+              </div>
+            ) : (
+              <div className="bg-white rounded-2xl shadow border border-slate-200 min-h-[72vh] h-full">
+                {!selected ? (
+                  <div className="p-8 text-center text-slate-500">
+                    <div className="flex justify-center mb-3">
+                      <Mail className="h-6 w-6" />
                     </div>
-                    <div className="text-sm text-slate-600 flex flex-wrap gap-x-4 gap-y-1">
-                      <div>
-                        <span className="font-medium">From:</span>{" "}
-                        {selected.from}
-                      </div>
-                      <div>
-                        <span className="font-medium">To:</span> {selected.to}
-                      </div>
-                      <div>
-                        <span className="font-medium">Account:</span>{" "}
-                        {selected.account}
-                      </div>
-                      <div>
-                        <span className="font-medium">Folder:</span>{" "}
-                        {selected.folder}
-                      </div>
-                      <div>
-                        <span className="font-medium">Date:</span>{" "}
-                        <PrettyDate value={selected.date} />
-                      </div>
-                    </div>
-                  </header>
-                  <hr className="border-slate-200" />
-                  <div className="prose prose-sm max-w-none">
-                    <pre className="whitespace-pre-wrap break-words text-sm leading-relaxed">
-                      {selected.body || "(no body)"}
-                    </pre>
+                    Select an email to view details.
                   </div>
-                </article>
-              )}
-            </div>
-          ))}
+                ) : (
+                  <article className="p-5 space-y-4 flex flex-col h-full">
+                    <header className="space-y-1 flex-shrink-0">
+                      <div className="flex items-start gap-3">
+                        <h2 className="text-lg font-semibold leading-tight flex-1">
+                          {selected.subject || "(no subject)"}
+                        </h2>
+                        <Badge label={selected.aiLabel} />
+                      </div>
+                      <div className="text-sm text-slate-600 flex flex-wrap gap-x-4 gap-y-1">
+                        <div>
+                          <span className="font-medium">From:</span>{" "}
+                          {selected.from}
+                        </div>
+                        <div>
+                          <span className="font-medium">To:</span> {selected.to}
+                        </div>
+                        <div>
+                          <span className="font-medium">Account:</span>{" "}
+                          {selected.account}
+                        </div>
+                        <div>
+                          <span className="font-medium">Folder:</span>{" "}
+                          {selected.folder}
+                        </div>
+                        <div>
+                          <span className="font-medium">Date:</span>{" "}
+                          <PrettyDate value={selected.date} />
+                        </div>
+                      </div>
+                    </header>
+                    <hr className="border-slate-200 flex-shrink-0" />
+                    <div className="prose prose-sm max-w-none relative flex-1 flex flex-col">
+                      {selected.body ? (
+                        <iframe
+                          srcDoc={selected.body || "<p>(no body)</p>"}
+                          className="w-full flex-1 border-0"
+                          sandbox="allow-same-origin allow-popups allow-forms"
+                          title="email-body"
+                        />
+                      ) : (
+                        "(no body)"
+                      )}
+                    </div>
+                  </article>
+                )}
+              </div>
+            ))}
         </section>
       </main>
       {/* Confirm Modal */}
       <ConfirmModal
         isOpen={modalOpen}
-        onClose={() => {setModalOpen(false); setDeleteAccount("")}}
-        onConfirm={()=>{handleDelete(); setLoading(true);setModalOpen(false);setDeleteAccount("");setSelected(null)}}
+        onClose={() => {
+          setModalOpen(false);
+          setDeleteAccount("");
+        }}
+        onConfirm={() => {
+          handleDelete();
+          setLoading(true);
+          setModalOpen(false);
+          setDeleteAccount("");
+          setSelected(null);
+        }}
       />
-    
     </div>
   );
 }

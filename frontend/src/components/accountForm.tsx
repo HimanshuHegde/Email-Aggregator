@@ -92,7 +92,7 @@ export default function EmailAccountsForm({onSave}:EmailAccountsFormProps) {
                         className="mt-1 w-full rounded-lg border px-3 py-2 focus:outline-none focus:ring-2 focus:ring-slate-200"
                       />
 
-                      <p className="text-xs text-slate-500 mt-2">
+                      <span className="text-xs text-slate-500 mt-2">
                         How to get a Gmail App Password (quick steps):
                         <ol className="list-decimal ml-4 mt-1">
                           <li>Enable 2-Step Verification on your Google account.</li>
@@ -100,7 +100,7 @@ export default function EmailAccountsForm({onSave}:EmailAccountsFormProps) {
                           <li>Select "Mail" and device, then click "Generate".</li>
                           <li>Copy the 16-character password and paste it above.</li>
                         </ol>
-                      </p>
+                      </span>
                     </div>
 
                     <div className="flex flex-col gap-2">

@@ -3,7 +3,9 @@ import imapConnection from "../server functions/imapConnection";
 import { Request, Response } from "express";
 import { Res } from "../types/email";
 import { createBulkEmails } from "../server functions/CRUD/emails";
-import { getAccountByEmail } from "../server functions/CRUD/accounts";
+import { simpleParser } from "mailparser";
+
+// import { getAccountByEmail } from "../server functions/CRUD/accounts";
 
 export async function fetchLast30Days(req: Request, res: Response) {
   let response: Res[] = [];
@@ -24,44 +26,51 @@ export async function fetchLast30Days(req: Request, res: Response) {
       since.setDate(since.getDate() - 30);
       // fetching only the last 30 days emails
       for await (let message of client!.client.fetch(
-        { since },
-        { envelope: true, uid: true, source: true, labels: true }
-      )) {
-        let folder: string;
-        for (let label of message.labels!) {
-          folder = label.slice(1);
-          if (folder === "Inbox") {
-            folder = "INBOX";
-          }
-        }
-        response.push({
-          uid: message.uid!,
-          message: {
-            from: message.envelope?.from![0]?.address!,
-            to: message.envelope?.to![0]?.address!,
-            account:
-              folder! === "Sent"
-                ? message.envelope?.from![0]?.address!
-                : message.envelope?.to![0]?.address!,
-            folder: folder!,
-            body: message.envelope?.subject!,
-            subject: message.envelope?.subject!,
-            name: message.envelope?.from![0]?.name!,
-            date: message.envelope?.date!,
-          },
-        });
-        
-        bulk.push({
-          from: message.envelope?.from![0]?.address!,
-          to: message.envelope?.to![0]?.address!,
-          folder: folder!,
-          body: message.envelope?.subject!,
-          subject: message.envelope?.subject!,
-          accountId: client!.accountId,
-          name: message.envelope?.from![0]?.name!,
-          date: message.envelope?.date!,
-        });
-      }
+  { since },
+  { envelope: true, uid: true, source: true, labels: true }
+)) {
+  let folder: string;
+  for (let label of message.labels!) {
+    folder = label.slice(1);
+    if (folder === "Inbox") {
+      folder = "INBOX";
+    }
+  }
+
+  // ✅ Parse the raw email source to extract body
+ const parsed = await simpleParser(message.source!);
+const body =  parsed.html || parsed.text || "";
+
+
+  response.push({
+    uid: message.uid!,
+    message: {
+      from: message.envelope?.from![0]?.address!,
+      to: message.envelope?.to![0]?.address!,
+      account:
+        folder! === "Sent"
+          ? message.envelope?.from![0]?.address!
+          : message.envelope?.to![0]?.address!,
+      folder: folder!,
+      body: body, // ✅ use parsed body instead of subject
+      subject: message.envelope?.subject!,
+      name: message.envelope?.from![0]?.name!,
+      date: message.envelope?.date!,
+    },
+  });
+
+  bulk.push({
+    from: message.envelope?.from![0]?.address!,
+    to: message.envelope?.to![0]?.address!,
+    folder: folder!,
+    body: body, // ✅ use parsed body instead of subject
+    subject: message.envelope?.subject!,
+    accountId: client!.accountId,
+    name: message.envelope?.from![0]?.name!,
+    date: message.envelope?.date!,
+  });
+}
+
     } catch (error) {
       console.error("Error fetching emails:", error);
     } finally {

@@ -48,7 +48,7 @@ export default function AuthPage() {
       <div className="w-full max-w-md bg-white rounded-2xl shadow-md p-8">
         {/* Title */}
         <h2 className="text-2xl font-semibold text-gray-800 text-center mb-6">
-          {isSignUp ? "Create an Account" : "Welcome Back"}
+          {isSignUp ? "Create an Account" : "Email Aggregator"}
         </h2>
 
         {/* Form */}
