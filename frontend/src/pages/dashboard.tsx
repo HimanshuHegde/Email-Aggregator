@@ -60,7 +60,7 @@ export default function Dashboard() {
 
   async function handleLogout() {
     localStorage.removeItem("token");
-    await fetch("http://localhost:3000/auth/logout", {
+    await fetch("https://email-aggregator-xjcx.onrender.com/auth/logout", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -82,7 +82,7 @@ export default function Dashboard() {
   // Initial load from IMAP (last 30 days)
   useEffect(() => {
     setAddaccount(false);
-    const socket = io("http://localhost:3000", {
+    const socket = io("https://email-aggregator-xjcx.onrender.com", {
       transports: ["websocket"],
     });
     const token = localStorage.getItem("token");

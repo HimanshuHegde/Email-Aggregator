@@ -43,7 +43,7 @@ export default function EmailAccountsForm({onSave}:EmailAccountsFormProps) {
       return;
     }
     const sanitized = accounts.filter((a) => a.email && a.AppPass);
-    await fetch("http://localhost:3000/api/elasticSearchfunc/addAccounts", {
+    await fetch("https://email-aggregator-xjcx.onrender.com/api/elasticSearchfunc/addAccounts", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

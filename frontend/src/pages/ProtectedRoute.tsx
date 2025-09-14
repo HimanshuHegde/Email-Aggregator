@@ -11,7 +11,7 @@ export default function ProtectedRoute({ children }: { children: JSX.Element }) 
             setAuth(false);
             return;
         }
-        const res = await fetch("http://localhost:3000/auth/me", {
+        const res = await fetch("https://email-aggregator-xjcx.onrender.com/auth/me", {
           method: "GET",
           headers: {
             "Content-Type": "application/json",

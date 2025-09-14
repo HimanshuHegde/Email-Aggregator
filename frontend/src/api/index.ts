@@ -1,6 +1,6 @@
 import type { Email } from "../type/email";
 
-const API_BASE = "http://localhost:3000";
+const API_BASE = "https://email-aggregator-xjcx.onrender.com";
 
 export async function fetchLast30Days(): Promise<Email[]> {
   const res = await fetch(`${API_BASE}/api/imapfunctions`, {
