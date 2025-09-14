@@ -96,7 +96,6 @@ export async function addAccounts(req:Request,res: Response){
 export async function BulkcreateEmail(req: Request, res: Response) {
   try {
       const emailList = req.body;
-      console.log(emailList)
       await createBulkEmails(emailList);
   } catch (err: any) {
     console.error("Error creating email(s):", err);

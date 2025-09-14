@@ -29,10 +29,8 @@ export default async function sendEmail(req: Request, res: Response) {
         subject: `message from ${data.name} - ${data.subject}`,
         text: data.body,
     });
-    console.log(2)
     res.status(200).json({ message: "Email sent successfully" });
     await createEmailDB(data);
-    console.log(3)
 } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Failed to send email" });

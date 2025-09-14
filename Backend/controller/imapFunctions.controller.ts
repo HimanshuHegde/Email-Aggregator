@@ -11,7 +11,6 @@ export async function fetchLast30Days(req: Request, res: Response) {
   let response: Res[] = [];
   let bulk: any[] = [];
   const clients: [{client: ImapFlow, accountId: number}?] = await imapConnection((req.user as any).userId);
-  console.log("clients.length", clients.length);
   if (clients.length === 0) {
     console.log("No clients connected");
     res.status(200).json({ state: 0, message: "No clients connected" });

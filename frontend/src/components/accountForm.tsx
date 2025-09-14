@@ -37,7 +37,6 @@ export default function EmailAccountsForm({onSave}:EmailAccountsFormProps) {
   async function handleSave() {
     // Replace this with an API call to persist accounts securely on the backend
     // For demo purposes we just log the JSON.
-    console.log('entered the function')
     const token = localStorage.getItem("token");
     if (!token) {
       console.error("No auth token found");

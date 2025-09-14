@@ -82,7 +82,6 @@ export default function Dashboard() {
   // Initial load from IMAP (last 30 days)
   useEffect(() => {
     setAddaccount(false);
-    console.log(createAccounts);
     const socket = io("http://localhost:3000", {
       transports: ["websocket"],
     });
@@ -185,7 +184,6 @@ export default function Dashboard() {
   };
 
   const handleDelete = async () => {
-    console.log("sdfsdfsdf", selectDeleteAccount);
     // Your delete logic here
     const res = await deleteAccount(selectDeleteAccount);
     if (res) {
