@@ -1,15 +1,14 @@
-# One Box Email Aggregator
+# Email Aggregator
 Note: Since backend is hosted in render it might go to sleep due to inactivity due to which data fetching could take a bit longer than expected or could even lead to an error.if u do come across an error just refresh it.
 A comprehensive email management system with real-time IMAP synchronization, AI-powered categorization, and Slack integration.
 ### Demo of the project 
-[![Watch the video](https://img.youtube.com/vi/mo5XjXIbD04/maxresdefault.jpg)](https://www.youtube.com/watch?v=mo5XjXIbD04)
 
 
 ## 🏗️ Architecture
 
 - **Backend**: Node.js, Express.js, Socket.io, TypeScript
 - **Frontend**: React, Tailwind CSS, TypeScript
-- **Database**: Elasticsearch (Docker)
+- **Database**: PostgreSQL
 - **Real-time**: Socket.io for live updates
 - **Email**: IMAP connections with IDLE mode,Nodemailer for sending mails
 - **AI**: Email categorization engine using gemini api
@@ -48,98 +47,7 @@ Automatic email classification into:
 - Advanced filtering by folder, account, and category
 - Elasticsearch-powered search functionality
 
-## 🚀 Local Setup
-### for elasitcSearch the connection for docker(local) is as follows
-```bash
-const client = new Client({
-  node: 'http://localhost:9200',
-  auth: {
-    username: 'elastic',         
-    password: process.env.ES_PASS
-  },
-});
-```
 
-
-### Prerequisites
-- Node.js (v18 or higher)
-- Docker and Docker Compose
-- npm or yarn package manager
-
-### 1. Start Elasticsearch Container
-
-First, start the Elasticsearch instance using Docker:
-
-```bash
-docker run -d --name elasticsearch -p 9200:9200 -p 9300:9300 \
-  -e "discovery.type=single-node" \
-  -e "ELASTIC_PASSWORD=1234567890" \
-  elasticsearch:8.19.2
-```
-
-Verify Elasticsearch is running:
-```bash
-curl http://localhost:9200
-```
-
-### 2. Backend Setup
-
-Navigate to the backend directory and install dependencies:
-
-```bash
-cd backend
-npm install
-```
-
-### 3. Frontend Setup
-
-Navigate to the frontend directory and install dependencies:
-
-```bash
-cd frontend
-npm install
-```
-
-### 4. Environment Configuration
-
-Create environment files for backend:
-
-#### Backend Environment (`.env`)
-Note: for gemini api it is recomended to use your own api because if the token runs out the classification will just respnd with unclassified.
-```env
-USER_ACCOUNTS = [{"email":"awps797@gmail.com","password":"rwua fekf ycxq gubn"},{"email":"797portfolio@gmail.com","password":"ftwi mtbh pmyi ohsa"}]
-ES_PASS = 1234567890
-GEMINI_API_KEY = AIzaSyA6O8bJDAfLklo8bQAF0j9XMVVQGGMNlXg
-SLACK_WEBHOOK_URL = https://hooks.slack.com/services/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
-WEBHOOK_SITE_URL = https://webhook.site/a51eb180-2c7c-41cb-9bcb-d006c6f01437
-```
-
-
-### 5. Start the Development Servers
-
-#### Start Backend Server
-```bash
-cd backend
-npm run dev
-```
-
-The backend server will start on `http://localhost:3001`
-
-#### Start Frontend Server
-In a new terminal:
-```bash
-cd frontend
-npm run dev
-```
-
-The frontend will start on `http://localhost:3000`
-
-## 🔧 Demo Environment Setup
-
-### Demo Slack Integration
-- Create a Slack app at https://api.slack.com
-- Generate an Incoming Webhook URL
-- Add the URL to your backend `.env` file
 
 ### Demo Webhook Testing
 - Visit https://webhook.site to get a unique webhook URL
