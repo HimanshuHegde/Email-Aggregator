@@ -2,7 +2,7 @@ import { Request, Response } from "express";
 import { Accounts } from "../types/email";
 import { PrismaClient,Prisma } from "@prisma/client";
 import { createBulkEmails, createEmailDB,  deleteEmail,  searchEmails } from "../server functions/CRUD/emails";
-import { deleteAccount, getAccountByEmail } from "../server functions/CRUD/accounts";
+import { createAccount, deleteAccount, getAccountByEmail } from "../server functions/CRUD/accounts";
 import { decrypt, encrypt } from "../server functions/crypto";
 const prisma = new PrismaClient();
 
@@ -41,12 +41,12 @@ export async function deleteAccounts(req: Request, res: Response) {
 export async function addAccounts(req:Request,res: Response){
   let accounts = req.body;
   for(const account of accounts){
-    account['AppPass'] = encrypt(account['AppPass'] as string);
     account['ownerId'] = (req.user as Accounts).userId
   }
-  await prisma.account.createMany({
-    data: accounts as Prisma.AccountCreateManyInput[]
-  });
+  await createAccount(accounts);
+  // await prisma.account.createMany({
+  //   data: accounts as Prisma.AccountCreateManyInput[]
+  // });
   res.status(201).json({ message: "Accounts added" });
   
 }
