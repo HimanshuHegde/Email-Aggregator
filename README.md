@@ -21,8 +21,7 @@ A comprehensive email management system with real-time IMAP synchronization, AI-
 - Persistent IMAP connections using IDLE mode for instant updates
 - No cron jobs - purely event-driven synchronization
 
-### 2. Searchable Storage with Elasticsearch
-- Locally hosted Elasticsearch instance via Docker
+### 2. Searchable Storage 
 - Full-text email search capabilities
 - Advanced indexing for optimal search performance
 - Filter by folder and account
@@ -44,7 +43,6 @@ Automatic email classification into:
 - Clean, responsive UI built with React and Tailwind
 - Real-time email display with live updates
 - Advanced filtering by folder, account, and category
-- Elasticsearch-powered search functionality
 
 
 
