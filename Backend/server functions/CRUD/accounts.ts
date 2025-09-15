@@ -9,10 +9,12 @@ export async function createAccount(account: Prisma.AccountCreateManyInput[]) {
             const encryptedPass = encrypt(acc.AppPass as string);
             acc.AppPass = encryptedPass;
         }
+        await prisma.account.upsert({
+            where: { email: acc.email },
+            update: acc,
+            create: acc
+        })
     }
-    await prisma.account.createMany({
-        data: account
-    });
 }
 
 export async function getAccountById(id: number) {
