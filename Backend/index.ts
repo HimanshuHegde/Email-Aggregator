@@ -19,13 +19,13 @@ const server = http.createServer(app);
 // socket
 const io = new Server(server, {
   cors: {
-    origin: '*',
+    origin: 'https://email-aggregator-xjcx.onrender.com',
     methods: ["GET", "POST"],
   },
 });
 io.on("connection", (socket) => {
   console.log("a user connected");
-  socket.on("authenicate", (data) => {
+  socket.on("authenticate", (data) => {
     console.log("Socket authenticated for user:", data.userId);
     (async function () {
     const clients = await imapConnection(Number(data.userId));
@@ -88,7 +88,7 @@ io.on("connection", (socket) => {
 
 app.use(CORS(
   {
-    origin: ["https://email-aggregator-ten.vercel.app", "http://localhost:5173"], 
+    origin: "https://email-aggregator-ten.vercel.app", 
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   credentials: true
   }
