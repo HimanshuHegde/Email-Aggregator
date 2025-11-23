@@ -19,7 +19,7 @@ const server = http.createServer(app);
 // socket
 const io = new Server(server, {
   cors: {
-    origin: 'https://email-aggregator-ten.vercel.app',
+    origin: '*',
     methods: ["GET", "POST"],
   },
 });
@@ -88,7 +88,7 @@ io.on("connection", (socket) => {
 
 app.use(CORS(
   {
-    origin: "https://email-aggregator-ten.vercel.app", 
+    origin: ["https://email-aggregator-ten.vercel.app","http://localhost:5173"], 
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   credentials: true
   }
