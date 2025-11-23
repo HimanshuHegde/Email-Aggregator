@@ -26,6 +26,7 @@ const io = new Server(server, {
 io.on("connection", (socket) => {
   console.log("a user connected");
   socket.on("authenicate", (data) => {
+    console.log("Socket authenticated for user:", data.userId);
     (async function () {
     const clients = await imapConnection(Number(data.userId));
     if (clients.length === 0) {
@@ -35,8 +36,10 @@ io.on("connection", (socket) => {
     for (let client of clients) {
       await client?.client.mailboxOpen("INBOX");
       // enabling the idling to listen for new emails
+      console.log("Listening for new emails");
       client?.client.on("exists", async () => {
         let lock = await client.client.getMailboxLock("INBOX");
+        console.log("New email arrived");
         try {
           for await (let message of client.client.fetch("*", {
             envelope: true,
