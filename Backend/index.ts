@@ -19,7 +19,7 @@ const server = http.createServer(app);
 // socket
 const io = new Server(server, {
   cors: {
-    origin: "https://email-aggregator-ten.vercel.app",
+    origin: '*',
     methods: ["GET", "POST"],
   },
 });
