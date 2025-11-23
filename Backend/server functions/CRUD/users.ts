@@ -1,8 +1,8 @@
-import { PrismaClient,Prisma } from "@prisma/client";
+// import { PrismaClient,Prisma } from "@prisma/client";
+import {prisma} from "../../lib/prisma"
+// const prisma = new PrismaClient();
 
-const prisma = new PrismaClient();
-
-export async function createUser(user: Prisma.UserCreateInput) {
+export async function createUser(user: any) {
     await prisma.user.create({
         data: {
             ...user
@@ -24,7 +24,7 @@ export async function getUserById(id: number) {
         }
     });
 }
-export async function updateUser(id: number, updates: Partial<Prisma.UserUpdateInput>) {
+export async function updateUser(id: number, updates: Partial<any>) {
     await prisma.user.update({
         where: { id },
         data: {

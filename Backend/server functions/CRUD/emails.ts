@@ -1,7 +1,8 @@
-import { Prisma, PrismaClient } from "@prisma/client";
+// import { Prisma, PrismaClient } from "@prisma/client";
+import {prisma} from "../../lib/prisma"
 import { Email } from "../../types/email";
 import { getAccountByEmail, getMultipleAccountsByEmails } from "./accounts";
-const prisma = new PrismaClient();
+// const prisma = new PrismaClient();
 
 export async function searchEmails(query: string) {
   try {
@@ -16,7 +17,7 @@ export async function searchEmails(query: string) {
     return [];
   }
 }
-export async function createEmailDB(email: Prisma.EmailsUncheckedCreateInput) {
+export async function createEmailDB(email: any) {
   try {
     await prisma.emails.create({
       data: {
@@ -29,7 +30,7 @@ export async function createEmailDB(email: Prisma.EmailsUncheckedCreateInput) {
 }
 
 export async function updateEmail(
-  email: Partial<Prisma.EmailsUncheckedUpdateInput> & { id: number }
+  email: Partial<any> & { id: number }
 ) {
   try {
     await prisma.emails.update({
@@ -67,7 +68,7 @@ export async function getEmailById(id: number) {
 }
 
 export async function createBulkEmails(
-  emails: Prisma.EmailsUncheckedCreateInput[]
+  emails: any[]
 ) {
   try {
     for(let email of emails){
@@ -85,7 +86,7 @@ export async function createBulkEmails(
 export async function getEmailsByAccount(accounts: string[]) {
   try {
     let res = (await getMultipleAccountsByEmails(accounts)).map(
-      (acc) => acc.id
+      (acc:any) => acc.id
     );
     return await prisma.emails.findMany({
       where: {

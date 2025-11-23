@@ -1,10 +1,11 @@
 import { Request, Response } from "express";
 import { Accounts } from "../types/email";
-import { PrismaClient,Prisma } from "@prisma/client";
+// import { PrismaClient,Prisma } from "@prisma/client";
+// import {prisma} from "../lib/prisma"
 import { createBulkEmails, createEmailDB,  deleteEmail,  searchEmails } from "../server functions/CRUD/emails";
 import { createAccount, deleteAccount, getAccountByEmail } from "../server functions/CRUD/accounts";
 import { decrypt, encrypt } from "../server functions/crypto";
-const prisma = new PrismaClient();
+// const prisma = new PrismaClient();
 
 // function to search emails based on a query string
 export async function searchEmail(req: Request, res: Response) {

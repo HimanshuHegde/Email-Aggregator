@@ -1,9 +1,10 @@
-import { PrismaClient, Prisma } from "@prisma/client";
+//  import {  Prisma } from "@prisma/client";
+import {prisma} from "../../lib/prisma"
 import { encrypt } from "../crypto";
 
-const prisma = new PrismaClient();
+// const prisma = new PrismaClient();
 
-export async function createAccount(account: Prisma.AccountCreateManyInput[]) {
+export async function createAccount(account: any[]) {
     for(const acc of account){
         if(acc.AppPass){
             const encryptedPass = encrypt(acc.AppPass as string);
@@ -53,7 +54,7 @@ export async function getAccountByEmail(email: string) {
         include: { owner: true }
     });
 }
-export async function updateAccount(id: number, updates: Partial<Prisma.AccountUpdateInput>) {
+export async function updateAccount(id: number, updates: Partial<any>) {
     await prisma.account.update({
         where: { id },
         data: {
