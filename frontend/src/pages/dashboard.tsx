@@ -90,6 +90,7 @@ export default function Dashboard() {
     socket.on("connect", () => {
       console.log("Connected to server");
       socket.emit("authenticate", { decoded });
+      console.log("Authentication emitted",decoded);
     });
     socket.on("new-email", (newEmail: Email) => {
       setEmails((prev) => [newEmail, ...prev]);
