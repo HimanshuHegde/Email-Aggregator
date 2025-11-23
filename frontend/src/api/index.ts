@@ -31,7 +31,17 @@ export default async function searchEmails(q: string): Promise<Email[]> {
   }
   return [];
 }
-
+export async function getAccounntByOwnerId(ownerId: number): Promise<any[]> {
+  const res = await fetch(`${API_BASE}/api/getOwnerById/${ownerId}`, {
+    method: "GET",
+    headers: {
+      'authorization': `Bearer ${localStorage.getItem("token")}`
+    }
+  });
+  if (!res.ok) throw new Error("Failed to fetch accounts");
+  const data = await res.json();
+  return data.accounts as any[];
+}
 export async function deleteAccount(email: string): Promise<boolean> {
   const res = await fetch(`${API_BASE}/api/elasticSearchfunc/deleteAccounts/${email}`, {
     method: "DELETE",

@@ -1,8 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { useEffect, useMemo, useState, useContext } from "react";
+import { useEffect, useMemo, useState, useContext, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import type { Email } from "../type/email";
-import searchEmails, { deleteAccount, fetchLast30Days } from "../api";
+import searchEmails, { deleteAccount, fetchLast30Days, getAccounntByOwnerId } from "../api";
 import { jwtDecode } from "jwt-decode";
 
 import {
@@ -29,6 +29,7 @@ export default function Dashboard() {
   const { createAccounts, setCreateAccounts } = useContext(UserContext)!;
   const navigate = useNavigate();
   const [emails, setEmails] = useState<Email[]>([]);
+  let userid = useRef<number | null>(null);
   const [filteredEmail, setFilteredEmail] = useState<Email[]>(emails);
   const [selectDeleteAccount, setDeleteAccount] = useState("");
   const [isComposeOpen, setIsComposeOpen] = useState(false);
@@ -81,15 +82,22 @@ export default function Dashboard() {
 
   // Initial load from IMAP (last 30 days)
   useEffect(() => {
+
     setAddaccount(false);
     const socket = io("https://email-aggregator-xjcx.onrender.com", {
       transports: ["websocket"],
     });
     const token = localStorage.getItem("token");
     const decoded = jwtDecode(token!);
+    userid.current = ((decoded as any).userId!);
     socket.on("connect", () => {
       console.log("Connected to server");
-      socket.emit("authenticate",  decoded );
+      socket.emit("authenticate", decoded);
+      (async () => {
+        let emails = await getAccounntByOwnerId(userid.current!);
+        setCreateAccounts(()=>emails);
+        // console.log(createAccounts)
+      })()
     });
     socket.on("new-email", (newEmail: Email) => {
       setEmails((prev) => [newEmail, ...prev]);
@@ -114,6 +122,7 @@ export default function Dashboard() {
         setLoading(false);
       }
     })();
+    // console.log("createAccounts changed:", createAccounts);
   }, [createAccounts]);
 
   // Derive accounts & folders from emails
@@ -191,6 +200,11 @@ export default function Dashboard() {
       setCreateAccounts((prev) =>
         prev.filter((a) => a.email !== selectDeleteAccount)
       );
+      // (async () => {
+      //   let emails = await getAccounntByOwnerId(userid.current!);
+      //   setCreateAccounts(()=>emails);
+      //   console.log(createAccounts)
+      // })()
     } else {
       alert("Failed to delete account");
     }
@@ -298,11 +312,10 @@ export default function Dashboard() {
               <div className="flex flex-wrap gap-2">
                 <button
                   onClick={() => setSelectedAccount(null)}
-                  className={`px-3 py-1.5 rounded-full border text-sm ${
-                    selectedAccount === null
+                  className={`px-3 py-1.5 rounded-full border text-sm ${selectedAccount === null
                       ? "bg-slate-900 text-white border-slate-900"
                       : "border-slate-300 hover:bg-slate-100"
-                  }`}
+                    }`}
                 >
                   All
                 </button>
@@ -313,11 +326,10 @@ export default function Dashboard() {
                       setSelectedAccount(acc!);
                       setFilteredEmail(emails);
                     }}
-                    className={`flex justify-center items-center gap-2 px-3 py-1.5 rounded-full border text-sm ${
-                      selectedAccount === acc
+                    className={`flex justify-center items-center gap-2 px-3 py-1.5 rounded-full border text-sm ${selectedAccount === acc
                         ? "bg-slate-900 text-white border-slate-900"
                         : "border-slate-300 hover:bg-slate-100"
-                    }`}
+                      }`}
                   >
                     <button
                       onClick={() => {
@@ -341,11 +353,10 @@ export default function Dashboard() {
               <div className="flex flex-wrap gap-2">
                 <button
                   onClick={() => setSelectedFolder(null)}
-                  className={`px-3 py-1.5 rounded-full border text-sm ${
-                    !selectedFolder
+                  className={`px-3 py-1.5 rounded-full border text-sm ${!selectedFolder
                       ? "bg-slate-900 text-white border-slate-900"
                       : "border-slate-300 hover:bg-slate-100"
-                  }`}
+                    }`}
                 >
                   All
                 </button>
@@ -356,11 +367,10 @@ export default function Dashboard() {
                       setSelectedFolder(f!);
                       setFilteredEmail(emails);
                     }}
-                    className={`px-3 py-1.5 rounded-full border text-sm ${
-                      selectedFolder === f
+                    className={`px-3 py-1.5 rounded-full border text-sm ${selectedFolder === f
                         ? "bg-slate-900 text-white border-slate-900"
                         : "border-slate-300 hover:bg-slate-100"
-                    }`}
+                      }`}
                   >
                     {f}
                   </button>
@@ -429,9 +439,9 @@ export default function Dashboard() {
                 </div>
               )}
               {accounts.length &&
-              !loading &&
-              !error &&
-              filtered.length === 0 ? (
+                !loading &&
+                !error &&
+                filtered.length === 0 ? (
                 <li className="p-6 text-sm text-slate-500">
                   No emails match the current filters.
                 </li>
@@ -444,9 +454,8 @@ export default function Dashboard() {
                       setIsComposeOpen(false);
                       setAddaccount(false);
                     }}
-                    className={`p-4 cursor-pointer hover:bg-slate-50 ${
-                      selected?.id === e.id ? "bg-slate-50" : ""
-                    }`}
+                    className={`p-4 cursor-pointer hover:bg-slate-50 ${selected?.id === e.id ? "bg-slate-50" : ""
+                      }`}
                   >
                     <div className="flex items-start gap-2">
                       <div className="flex-1 min-w-0">
@@ -502,11 +511,12 @@ export default function Dashboard() {
                       <option value="" disabled>
                         Select sender
                       </option>
-                      {createAccounts.map((account) => (
-                        <option key={account.email} value={account.email}>
+                      {createAccounts.map((account) => {
+                        // console.log("account:", account);
+                        return (<option key={account.email} value={account.email}>
                           {account.email}
-                        </option>
-                      ))}
+                        </option>)
+                      })}
                     </select>
                     <input
                       type="email"
