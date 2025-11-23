@@ -25,7 +25,7 @@ const io = new Server(server, {
 });
 io.on("connection", (socket) => {
   console.log("a user connected");
-  socket.on("authenticate", (data) => {
+  socket.on("authenticate", ({data}) => {
     console.log("Socket authenticated for user:", data);
     (async function () {
     const clients = await imapConnection(Number(data.userId));
