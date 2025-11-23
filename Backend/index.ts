@@ -4,6 +4,7 @@ import http from "http";
 import CORS from "cors";
 import express from "express";
 import authRoutes from "./routes/auth.route";
+import sendOwner from "./routes/account.route";
 import imapConnection from "./server functions/imapConnection";
 import { Server } from "socket.io";
 import sendmail from "./routes/nodemailer.route";
@@ -117,7 +118,7 @@ app.use("/auth", authRoutes);
 app.use("/api/imapfunctions", imapfunctions);
 app.use("/api/elasticSearchfunc", elasticSearchfunc);
 app.use("/api/sendMail", sendmail);
-
+app.get("/api/getOwnerById",sendOwner)
 server.listen(3000, () => {
   console.log("Socket server listening on port ", PORT);
 });
