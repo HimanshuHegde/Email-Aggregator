@@ -27,7 +27,7 @@ model Emails{
   accountId Int
   search_vector Unsupported("tsvector")?
 
-  @@unique([accountId, from, to, subject, date, body])
+  @@unique([accountId, from, to, date])
 }
 
 model Account{
