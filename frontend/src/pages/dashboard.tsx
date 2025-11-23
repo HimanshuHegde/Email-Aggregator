@@ -89,8 +89,7 @@ export default function Dashboard() {
     const decoded = jwtDecode(token!);
     socket.on("connect", () => {
       console.log("Connected to server");
-      socket.emit("authenticate", { decoded });
-      console.log("Authentication emitted",decoded);
+      socket.emit("authenticate",  decoded );
     });
     socket.on("new-email", (newEmail: Email) => {
       setEmails((prev) => [newEmail, ...prev]);
