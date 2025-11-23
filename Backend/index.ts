@@ -118,7 +118,7 @@ app.use("/auth", authRoutes);
 app.use("/api/imapfunctions", imapfunctions);
 app.use("/api/elasticSearchfunc", elasticSearchfunc);
 app.use("/api/sendMail", sendmail);
-app.get("/api/getOwnerById",sendOwner)
+app.use("/api/getOwnerById",sendOwner)
 server.listen(3000, () => {
   console.log("Socket server listening on port ", PORT);
 });
