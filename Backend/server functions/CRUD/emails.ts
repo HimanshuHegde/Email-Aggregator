@@ -19,6 +19,7 @@ export async function searchEmails(query: string) {
 }
 export async function createEmailDB(email: any) {
   try {
+    console.log("Creating email:", email);
     await prisma.emails.create({
       data: {
         ...email,
