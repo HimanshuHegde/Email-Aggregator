@@ -58,7 +58,7 @@ io.on("connection", (socket) => {
               aiLabel: classify,
               folder: "INBOX",
               body: message.envelope?.subject!,
-              accountId: account?.ownerId!,
+              accountId: account?.id!,
             };
 
             await createEmailDB(object);

@@ -23,7 +23,7 @@ export async function createEmail(req: Request, res: Response) {
   email.account = email.from;
   const result = await getAccountByEmail(email.from!);
     if(result){
-        email['accountId'] = result.ownerId;
+        email['accountId'] = result.id;
     }
   await createEmailDB(email);
   res.status(201).json({ message: "Email created" });
