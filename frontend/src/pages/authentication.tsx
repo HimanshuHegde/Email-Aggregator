@@ -9,7 +9,7 @@ export default function AuthPage() {
     (async()=>{
       const token = localStorage.getItem("token")
       if(!token) return;
-      const valid = await fetch("https://email-aggregator-xjcx.onrender.com/auth/me", {
+      const valid = await fetch("https://email-aggregator-1.onrender.com/auth/me", {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
@@ -26,7 +26,7 @@ export default function AuthPage() {
     e.preventDefault();
     const formDat = new FormData(e.currentTarget as HTMLFormElement);
     const data = Object.fromEntries(formDat.entries());
-    const res = await fetch(`https://email-aggregator-xjcx.onrender.com/auth/${isSignUp ? "signup" : "login"}`, {
+    const res = await fetch(`https://email-aggregator-1.onrender.com/auth/${isSignUp ? "signup" : "login"}`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

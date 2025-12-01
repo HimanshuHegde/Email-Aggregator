@@ -61,7 +61,7 @@ export default function Dashboard() {
 
   async function handleLogout() {
     localStorage.removeItem("token");
-    await fetch("https://email-aggregator-xjcx.onrender.com/auth/logout", {
+    await fetch("https://email-aggregator-1.onrender.com/auth/logout", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -84,7 +84,7 @@ export default function Dashboard() {
   useEffect(() => {
 
     setAddaccount(false);
-    const socket = io("https://email-aggregator-xjcx.onrender.com", {
+    const socket = io("https://email-aggregator-1.onrender.com", {
       transports: ["websocket"],
     });
     const token = localStorage.getItem("token");
