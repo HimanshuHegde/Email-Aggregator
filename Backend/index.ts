@@ -3,6 +3,7 @@ import elasticSearchfunc from "./routes/elasticSearchFunc.route";
 import http from "http";
 import CORS from "cors";
 import express from "express";
+import { simpleParser } from "mailparser";
 import authRoutes from "./routes/auth.route";
 import sendOwner from "./routes/account.route";
 import imapConnection from "./server functions/imapConnection";
@@ -45,7 +46,11 @@ io.on("connection", (socket) => {
           for await (let message of client.client.fetch("*", {
             envelope: true,
             uid: true,
+            source: true,
+            labels: true,
           })) {
+            const parsed = await simpleParser(message.source!);
+            const body = parsed.html || parsed.text || "";
             let account = await getAccountByEmail(
               message.envelope?.to![0]?.address!
             );
