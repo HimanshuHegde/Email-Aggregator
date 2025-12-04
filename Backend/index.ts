@@ -63,7 +63,7 @@ io.on("connection", (socket) => {
               to: message.envelope?.to![0]?.address!,
               aiLabel: classify,
               folder: "INBOX",
-              body: message.envelope?.subject!,
+              body: body,
               accountId: account?.id!,
             };
 
