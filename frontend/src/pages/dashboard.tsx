@@ -95,6 +95,7 @@ export default function Dashboard() {
       socket.emit("authenticate", decoded);
       (async () => {
         let emails = await getAccounntByOwnerId(userid.current!);
+        // console.log(emails)
         setCreateAccounts(()=>emails);
         // console.log(createAccounts)
       })()
@@ -114,6 +115,7 @@ export default function Dashboard() {
       setError(null);
       try {
         const items = await fetchLast30Days();
+        // console.log(items)
         setEmails(items);
         setFilteredEmail(items);
       } catch (e: any) {
@@ -126,10 +128,13 @@ export default function Dashboard() {
   }, [createAccounts]);
 
   // Derive accounts & folders from emails
-  const accounts = useMemo(
-    () => Array.from(new Set(emails.map((e) => e.account).filter(Boolean))),
-    [emails]
-  );
+  // const accounts = useMemo(
+  //   () => Array.from(new Set(emails.map((e) => e.account).filter(Boolean))),
+  //   [emails]
+  // );
+  const accounts = useMemo(() => {
+    return Array.from(createAccounts.map((acc) => acc.email));
+  }, [createAccounts])
   const folders = useMemo(
     () => Array.from(new Set(emails.map((e) => e.folder).filter(Boolean))),
     [emails]
@@ -331,14 +336,14 @@ export default function Dashboard() {
                         : "border-slate-300 hover:bg-slate-100"
                       }`}
                   >
-                    <button
+                    <span
                       onClick={() => {
                         setModalOpen(true);
                         setDeleteAccount(acc!);
                       }}
                     >
                       <CgClose className="h-4 w-4" />
-                    </button>
+                    </span>
 
                     <span>{acc}</span>
                   </button>
@@ -443,7 +448,7 @@ export default function Dashboard() {
                 !error &&
                 filtered.length === 0 ? (
                 <li className="p-6 text-sm text-slate-500">
-                  No emails match the current filters.
+                  No emails found.
                 </li>
               ) : (
                 filtered.map((e) => (
@@ -462,9 +467,6 @@ export default function Dashboard() {
                         <div className="flex items-center gap-2">
                           <div className="truncate font-medium">
                             {e.subject || "(no subject)"}
-                          </div>
-                          <Badge label={e.aiLabel} />
-                        </div>
                         <div className="text-xs text-slate-500 truncate">
                           From: {e.from} • To: {e.to}
                         </div>
@@ -475,6 +477,9 @@ export default function Dashboard() {
                       <div className="text-xs text-slate-500 whitespace-nowrap">
                         <PrettyDate value={e.date} />
                       </div>
+                          </div>
+                          <Badge label={e.aiLabel} />
+                        </div>
                     </div>
                   </li>
                 ))

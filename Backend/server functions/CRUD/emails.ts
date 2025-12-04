@@ -102,3 +102,40 @@ export async function getEmailsByAccount(accounts: string[]) {
     return null;
   }
 }
+export async function getLatestEmailByAccountId(accountId: number) {
+  try {
+    return await prisma.emails.findFirst({
+      where: {
+        accountId,
+      },
+      orderBy: {
+        date: "desc",
+      },
+    });
+  } catch (err) {
+    console.error("Error fetching latest email by account ID:", err);
+    return null;
+  }
+}
+
+export async function getLast30DaysEmails(accoundId: number): Promise<Email[]> {
+  const thirtyDaysAgo = new Date();
+  thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+  try {
+    return await prisma.emails.findMany({
+      where: {
+        accountId: accoundId,
+        date: {
+          gte: thirtyDaysAgo,
+        },
+      },
+      orderBy: {
+        date: "desc",
+      },
+    });
+  } catch (err) {
+    console.error("Error fetching last 30 days emails:", err);
+    return [];
+  }
+}

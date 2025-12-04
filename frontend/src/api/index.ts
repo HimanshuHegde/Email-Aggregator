@@ -10,8 +10,10 @@ export async function fetchLast30Days(): Promise<Email[]> {
   });
   if (!res.ok) throw new Error("Failed to fetch recent emails");
   const data = await res.json();
+  // console.log('sdfafsad',data);
   if (Array.isArray(data)) {
-    return data.map((row) => ({ id: String(row.uid), ...row.message } as Email));
+    return data.map((row) => ({ id: String(row.uid), ...row } as Email));
+
   }
   return [];
 }
