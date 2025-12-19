@@ -143,7 +143,7 @@ export default function Dashboard() {
   // Filtered view
   const filtered = useMemo(() => {
     return filteredEmail.filter((e) => {
-      if (selectedAccount && e.account !== selectedAccount) return false;
+      if (selectedAccount && e.to !== selectedAccount) return false;
       if (selectedFolder && e.folder !== selectedFolder) return false;
       return true;
     });

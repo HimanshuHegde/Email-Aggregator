@@ -8,6 +8,7 @@ import { simpleParser } from "mailparser";
 // import { getAccountByEmail } from "../server functions/CRUD/accounts";
 
 export async function fetchLast30Days(req: Request, res: Response) {
+  console.log("Fetching last 30 days emails for user:", (req.user as any).userId);
   let response: Email[] = [];
   let bulk: any[] = [];
   const clients: [{ client: ImapFlow, accountId: number }?] = await imapConnection((req.user as any).userId);
@@ -22,6 +23,7 @@ export async function fetchLast30Days(req: Request, res: Response) {
     let lock = await client?.client.getMailboxLock("[Gmail]/All Mail");
     try {
       let latestEmail = await getLatestEmailByAccountId(client?.accountId!);
+      console.log("Latest email", latestEmail);
       let since: Date;
       if (latestEmail) {
         since = new Date(latestEmail.date);
@@ -84,13 +86,15 @@ export async function fetchLast30Days(req: Request, res: Response) {
     } finally {
       lock?.release();
     }
+   await createBulkEmails(bulk);
+
     response = await getLast30DaysEmails(client?.accountId!);
+    console.log("Fetched emails:", response.length);
   }
   response = response.sort(
     (a, b) => b.date.getTime() - a.date.getTime()
   );
   bulk = bulk.sort((a, b) => b.date!.getTime() - a.date!.getTime());
-  await createBulkEmails(bulk);
   res.status(200).json(response);
   
 }
