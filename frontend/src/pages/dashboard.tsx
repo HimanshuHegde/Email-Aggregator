@@ -175,7 +175,7 @@ export default function Dashboard() {
     e.preventDefault();
     try {
       const res = await fetch(
-        "https://reachinbox-assign.onrender.com/api/sendMail",
+        "https://email-aggregator-1.onrender.com/api/sendMail",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
