@@ -12,7 +12,7 @@ export default async function sendEmail(req: Request, res: Response) {
     // Accouunt!.AppPass = decrypt(Accouunt?.AppPass! as any);
     // console.log(Accouunt?.AppPass,"Encrypted Pass");
     console.log('1sdfsdsdfsdf');
-    let response = await fetch('http://localhost:3001/sendMail', {
+    let response = await fetch('email-aggregator-o3jt.vercel.app/sendMail', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
