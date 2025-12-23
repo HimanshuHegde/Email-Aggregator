@@ -1,6 +1,6 @@
 import { request, response } from "express";
 import nodemailer from "nodemailer";
-import { decrypt } from "../functions/index.ts";
+import { decrypt } from "../functions/index.js";
 
 export default async function sendMail(req = request, res = response) {
     console.log("SendMail service received a request");

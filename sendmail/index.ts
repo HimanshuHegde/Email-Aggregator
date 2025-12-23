@@ -1,5 +1,5 @@
 import express from 'express'
-import sendMail from './controller/sendMail.controller.ts';
+import sendMail from './controller/sendMail.controller.js';
 import CORS from 'cors';
 const PORT = process.env.PORT || 3001;
 const app = express();
