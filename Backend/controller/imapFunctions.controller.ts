@@ -4,7 +4,7 @@ import { Request, Response } from "express";
 import { Email } from "../types/email";
 import { createBulkEmails, getEmailsByAccount, getLast30DaysEmails, getLatestEmailByAccountId } from "../server functions/CRUD/emails";
 import { simpleParser } from "mailparser";
-
+import { sendToQueue } from "../server functions/queue/send";
 // import { getAccountByEmail } from "../server functions/CRUD/accounts";
 
 export async function fetchLast30Days(req: Request, res: Response) {
@@ -17,17 +17,18 @@ export async function fetchLast30Days(req: Request, res: Response) {
     res.status(200).json({ state: 0, message: "No clients connected" });
     return;
   }
-
+  let latestEmail: Email | null = null;
   for (let client of clients) {
     // getting the message from inbox
     let lock = await client?.client.getMailboxLock("[Gmail]/All Mail");
     try {
-      let latestEmail = await getLatestEmailByAccountId(client?.accountId!);
+      latestEmail = await getLatestEmailByAccountId(client?.accountId!);
       console.log("Latest email", latestEmail);
       let since: Date;
       if (latestEmail) {
         since = new Date(latestEmail.date);
         since.setSeconds(since.getSeconds() + 1);
+        console.log("Fetching emails since:", since);
       }
       else {
         since = new Date();
@@ -68,7 +69,8 @@ export async function fetchLast30Days(req: Request, res: Response) {
         //     date: message.envelope?.date!,
         //   },
         // });
-
+        const msgDate = message.envelope?.date!;
+        if (msgDate.getTime() <= since.getTime()) continue;
         bulk.push({
           from: message.envelope?.from![0]?.address!,
           to: message.envelope?.to![0]?.address!,
@@ -78,6 +80,7 @@ export async function fetchLast30Days(req: Request, res: Response) {
           accountId: client!.accountId,
           name: message.envelope?.from![0]?.name!,
           date: message.envelope?.date!,
+          aiLabel: "uncategorized",
         });
       }
 
@@ -86,9 +89,14 @@ export async function fetchLast30Days(req: Request, res: Response) {
     } finally {
       lock?.release();
     }
-   await createBulkEmails(bulk);
-
-    response = await getLast30DaysEmails(client?.accountId!);
+    response = bulk;
+    if (latestEmail) {
+      bulk.forEach(email => {
+        console.log('bulk', email.subject, ':', email.date);
+      });
+      response.push(...await getLast30DaysEmails(client?.accountId!));
+    }
+    sendToQueue(bulk);
     console.log("Fetched emails:", response.length);
   }
   response = response.sort(
@@ -96,5 +104,5 @@ export async function fetchLast30Days(req: Request, res: Response) {
   );
   bulk = bulk.sort((a, b) => b.date!.getTime() - a.date!.getTime());
   res.status(200).json(response);
-  
+
 }

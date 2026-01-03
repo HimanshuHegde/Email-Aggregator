@@ -1,0 +1,50 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Emails{
+  id Int @id @default(autoincrement())
+  subject String
+  body String
+  from String
+  to String
+  folder String
+  name String
+  aiLabel String
+  date DateTime
+  account Account @relation(fields: [accountId], references: [id])
+  accountId Int
+  search_vector Unsupported("tsvector")?
+
+  @@unique([accountId, from, to, date])
+}
+
+model Account{
+  id Int @id @default(autoincrement())
+  email String @unique
+  AppPass Json
+  owner User @relation(fields: [ownerId], references: [id])
+  ownerId Int
+  emails Emails[]
+}
+
+model User {
+  id Int @id @default(autoincrement())
+  email String @unique
+  password String
+  name String
+  account Account[]
+
+}
+

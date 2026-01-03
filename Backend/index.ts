@@ -12,12 +12,13 @@ import sendmail from "./routes/nodemailer.route";
 import { createEmailDB } from "./server functions/CRUD/emails";
 import { getAccountByEmail } from "./server functions/CRUD/accounts";
 import { classifyEmail } from "./server functions/aiClassifier";
+import { initQueue } from "./server functions/queue/send";
 const app = express();
 const PORT = process.env.PORT || 3000;
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 const server = http.createServer(app);
-
+initQueue();
 // socket
 const io = new Server(server, {
   cors: {
@@ -83,6 +84,7 @@ io.on("connection", (socket) => {
     if (JSON.stringify(prevobject) != JSON.stringify(object)) {
       prevobject = object;
       socket.emit("new-email", object);
+      console.log("New email emitted");
     }
   }
 });

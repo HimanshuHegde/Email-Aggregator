@@ -254,7 +254,10 @@ export default function Dashboard() {
                   type="button"
                   onClick={async () => {
                     setQ("");
-                    await fetchLast30Days().then(setEmails);
+                    
+                      // setEmails(tempEmails.current);
+                      setFilteredEmail(emails);
+                    
                   }}
                   className="absolute right-2 top-2.5"
                 >
@@ -451,9 +454,9 @@ export default function Dashboard() {
                   No emails found.
                 </li>
               ) : (
-                filtered.map((e) => (
+                filtered.map((e,i) => (
                   <li
-                    key={e.id || e.subject + e.date}
+                    key={i  || e.subject + e.date + i}
                     onClick={() => {
                       setSelected(e);
                       setIsComposeOpen(false);

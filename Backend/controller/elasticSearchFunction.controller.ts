@@ -31,6 +31,7 @@ export async function createEmail(req: Request, res: Response) {
 }
 
 export async function deleteAccounts(req: Request, res: Response) {
+  console.log("Deleting account:", req.params);
   const { email } = req.params;
   let resp = await getAccountByEmail(email);
   await deleteEmail(resp?.id!)
